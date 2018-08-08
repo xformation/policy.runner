@@ -1,0 +1,52 @@
+{
+    "Listeners": [
+        {
+            "ListenerArn": "string",
+            "LoadBalancerArn": "string",
+            "Port": 123,
+            "Protocol": ["HTTP", "HTTPS", "TCP"],
+            "Certificates": [
+                {
+                    "CertificateArn": "string",
+                    "IsDefault": [true, false]
+                }
+            ],
+            "SslPolicy": "string",
+            "DefaultActions": [
+                {
+                    "Type": ["forward", "authenticate-oidc", "authenticate-cognito"],
+                    "TargetGroupArn": "string",
+                    "AuthenticateOidcConfig": {
+                        "Issuer": "string",
+                        "AuthorizationEndpoint": "string",
+                        "TokenEndpoint": "string",
+                        "UserInfoEndpoint": "string",
+                        "ClientId": "string",
+                        "ClientSecret": "string",
+                        "SessionCookieName": "string",
+                        "Scope": "string",
+                        "SessionTimeout": 123,
+                        "AuthenticationRequestExtraParams": {
+                            "string": "string"
+                        },
+                        "OnUnauthenticatedRequest": ["deny", "allow", "authenticate"]
+                    },
+                    "AuthenticateCognitoConfig": {
+                        "UserPoolArn": "string",
+                        "UserPoolClientId": "string",
+                        "UserPoolDomain": "string",
+                        "SessionCookieName": "string",
+                        "Scope": "string",
+                        "SessionTimeout": 123,
+                        "AuthenticationRequestExtraParams": {
+                            "string": "string"
+                        },
+                        "OnUnauthenticatedRequest": ["deny", "allow", "authenticate"]
+                    },
+                    "Order": 123
+                }
+            ]
+        }
+    ],
+    "NextMarker": "string"
+}
