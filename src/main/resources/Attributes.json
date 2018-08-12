@@ -1,25 +1,24 @@
-
 {
     "Attributes": [
         {
             "Key": "access_logs.s3.enabled",
-            "Value": "false",
+            "Value": "false"
         },
         {
             "Key": "idle_timeout.timeout_seconds",
-            "Value": "60",
+            "Value": "60"
         },
         {
             "Key": "access_logs.s3.prefix",
-            "Value": "",
+            "Value": ""
         },
         {
             "Key": "deletion_protection.enabled",
-            "Value": "false",
+            "Value": "false"
         },
         {
             "Key": "access_logs.s3.bucket",
-            "Value": "",
+            "Value": ""
         }
     ]
 }

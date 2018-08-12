@@ -1,15 +1,17 @@
-
 {
     "Rules": [
         {
+        	"ruleId": "Rule-1",
             "Actions": [
                 {
+                	"uuid": "Action-1",
                     "TargetGroupArn": "arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-targets/73e2d6bc24d8a067",
                     "Type": "forward"
                 }
             ],
             "Conditions": [
                 {
+                	"condition_id": "Condition-1",
                     "Field": "path-pattern",
                     "Values": [
                         "/img/*"
