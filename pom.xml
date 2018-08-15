@@ -5,7 +5,6 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>policy.runner</artifactId>
-	<packaging>war</packaging>
 
 	<name>policy.runner</name>
 	<description>Spring web application for creating policy rule and action scripts to collect compliance results for report generation.</description>
@@ -28,6 +27,16 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.synectiks</groupId>
 			<artifactId>common-libraries</artifactId>
 			<version>${project.version}</version>
@@ -37,22 +46,6 @@
 			<artifactId>schemas</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
-
 
 </project>
