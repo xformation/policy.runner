@@ -11,9 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.synectiks.commons.constants.IConsts;
+import com.synectiks.commons.exceptions.SynectiksException;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.utils.IConstants;
 import com.synectiks.policy.runner.utils.IUtilities;
+import com.synectiks.policy.runner.utils.NestedString;
 
 /**
  * @author Rajesh
@@ -58,7 +60,15 @@ public class QueryParser implements IConstants {
 			} else if (haveOperator(qry)) {
 				
 			} else if (haveFunction(qry)) {
-				exprs = processFunctionQuery(qry);
+				String tkey = IUtilities.getFirstString(qry);
+				Keywords func = getFunction(qry);
+				// update query to remove the processed part.
+				qry = IUtilities.removeProcessedString(qry, tkey);
+				qry = IUtilities.removeProcessedString(qry, func.getKey());
+				String groupValue = getGroupStringValue(qry, Keywords.SmlBrkt);
+				qry = IUtilities.removeProcessedString(qry, groupValue);
+				
+				exprs = processFunctionQuery(qry, tkey, func, groupValue);
 			} else if (isStartWithHasKeyword(qry)) {
 				qry = IUtilities.removeProcessedString(qry, Keywords.HAS.getKey());
 				key = IUtilities.getFirstString(qry);
@@ -78,20 +88,17 @@ public class QueryParser implements IConstants {
 
 	/**
 	 * Method to process function query to get elastic query.
-	 * @param qry 
+	 * @param key 
+	 * @param func 
+	 * @param groupValue 
 	 * @return
 	 */
-	private JSONObject processFunctionQuery(String qry) {
+	private JSONObject processFunctionQuery(
+			String key, Keywords func, String groupValue) {
 		JSONObject json = null;
-		String key = IUtilities.getFirstString(qry);
 		if (!IUtils.isNullOrEmpty(key)) return json;
-		Keywords func = getFunction(qry);
 		if (!IUtils.isNull(func)) return json;
-		// update query to remove the processed part.
-		qry = IUtilities.removeProcessedString(qry, key);
-		qry = IUtilities.removeProcessedString(qry, func.getKey());
-		logger.info("key: {0}, function: {1}\n query: {2}", key, func, qry);
-		String groupValue = getGroupStringValue(qry, Keywords.SmlBrkt);
+		logger.info("key: {0}, function: {1}\n groupValue: {2}", key, func, groupValue);
 		switch(func) {
 		case ISEMPTY:
 		case ISNOTEMPTY:
@@ -114,8 +121,13 @@ public class QueryParser implements IConstants {
 	 */
 	private String getGroupStringValue(String qry, Keywords grpOp) {
 		if (!IUtils.isNullOrEmpty(qry)) {
-			if (qry.startsWith(grpOp.getGroupStart())) {
-				int indx = IUtilities.findClosingIndex(qry, grpOp);
+			try {
+				NestedString nstStr = NestedString.parse(
+						qry, grpOp.getGroupStart(), grpOp.getGroupEnd(), true);
+				logger.warn(nstStr.getError());
+				return NestedString.getUpperGroupString(nstStr);
+			} catch (SynectiksException e) {
+				logger.error(e.getMessage(), e);
 			}
 		}
 		return null;

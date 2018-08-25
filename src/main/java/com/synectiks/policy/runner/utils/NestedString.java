@@ -9,6 +9,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.synectiks.commons.exceptions.SynectiksException;
 import com.synectiks.commons.utils.IUtils;
 
 /**
@@ -98,7 +99,7 @@ public class NestedString {
 			json.put("leftDelimiter", leftDelimiter);
 			json.put("rightDelimiter", rightDelimiter);
 			json.put("originalText", originalText);
-			json.put("text", originalText.substring(start, end));
+			json.put("text", getTextInRange());
 			if (!IUtils.isNull(children) && !children.isEmpty()) {
 				JSONArray childs = new JSONArray();
 				for (NestedString ns : children) {
@@ -117,46 +118,47 @@ public class NestedString {
 		return toJson().toString();
 	}
 
+	public static String getUpperGroupString(NestedString nstStr) {
+		if (!IUtils.isNull(nstStr) && nstStr.getChildren().size() > 0) {
+			return nstStr.getChildren().get(0).getTextInRange();
+		}
+		return null;
+	}
+
 	public static NestedString parse(String text, String left, String right,
-			boolean includeDelims) {
-		/**
-		 * So called because it is a. the outermost and b. the output. Or
-		 * rather, its child array is the output. It's more convenient this way,
-		 * though.
-		 */
+			boolean includeDelims) throws SynectiksException {
+
 		final NestedString out = new NestedString(text, left, right, includeDelims);
 		out.start = 0;
 		out.end = text.length();
-		if (text == null || left == null || right == null) {
-			out.error = "#1 One of the arguments was null.";
-			return out;
-		}
-		if (left.isEmpty() || right.isEmpty()) {
-			out.error = "#2 One of the delimiters was empty.";
-			return out;
+		if (IUtils.isNullOrEmpty(text) && IUtils.isNullOrEmpty(text) &&
+				IUtils.isNullOrEmpty(text)) {
+			throw new SynectiksException("One or more arguments are null or empty.");
 		}
 		boolean lcr = left.contains(right);
 		boolean rcl = right.contains(left);
 		if (lcr != rcl) {
-			out.error = "#3 The delimiters are not equal and one of them contains the other.";
+			logger.warn("The delimiters are not equal and one of them contains the other.");
 			return out;
 		}
+
 		/** Are the delimiters identical? */
 		final boolean eq = lcr && rcl;
 		final int ll = left.length();
 		final int rl = right.length();
+
 		/**
 		 * A range that has been open but not closed. Will be made the parent of
 		 * the next range.
 		 */
-		NestedString up = out;
+		NestedString parent = out;
 		int searchStart = 0;
 		while (true) {
 			if (eq) {
 				// Just find the next two instances of the delimiter.
 				int lpos = text.indexOf(left, searchStart);
 				if (lpos < searchStart) {
-					out.error = "#4 Odd number of occurences of equal delimiters";
+					out.error = "Odd number of occurences of equal delimiters";
 					break;
 				}
 				searchStart = lpos + ll;
@@ -175,10 +177,10 @@ public class NestedString {
 				if (rpos < searchStart) {
 					// Since no right delimiters were found, no ranges can be
 					// closed.
-					if (up != out) {
+					if (parent != out) {
 						// we're in an inner level, and there are still unclosed
 						// ranges.
-						out.error = "#5 Too many opening delimiters.";
+						out.error = "Too many opening delimiters.";
 					}
 					break;
 				}
@@ -187,22 +189,22 @@ public class NestedString {
 				}
 				if (rpos < lpos) {
 					// The next delimiter closes the current range
-					if (up == out) {
+					if (parent == out) {
 						// We're in the outermost level and trying to close it.
 						// Derp.
-						out.error = "#6 Too many closing delimiters.";
+						out.error = "Too many closing delimiters.";
 						break;
 					}
-					up.end = rpos + (includeDelims ? rl : 0);
-					up.parent.children.add(up);
-					up = up.parent;
+					parent.end = rpos + (includeDelims ? rl : 0);
+					parent.parent.children.add(parent);
+					parent = parent.parent;
 					searchStart = rpos + rl;
 				} else {
 					// The next delimiter opens a new can of worms.
-					NestedString ns = new NestedString(up, text, left, right,
+					NestedString ns = new NestedString(parent, text, left, right,
 							includeDelims);
 					ns.start = lpos + (includeDelims ? 0 : ll);
-					up = ns;
+					parent = ns;
 					searchStart = lpos + ll;
 				}
 			}

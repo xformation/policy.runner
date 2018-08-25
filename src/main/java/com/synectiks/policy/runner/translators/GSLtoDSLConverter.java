@@ -459,20 +459,11 @@ public class GSLtoDSLConverter {
 
 	public static void main(String... args) throws SynectiksException {
 		String str = "rajesh (abc (def(klm()) AND efg(hig(nop()))) ) kumar";
-		System.out.println(NestedString.parse(str, "(", ")", true));
-		int ind = IUtilities.findClosingIndex(str,
-				IConstants.Keywords.SmlBrkt);
-		//System.out.println("Close index: " + ind + ": " + str.substring(0, ind));
+		System.out.println(NestedString.parse(str, "(", ")", false));
 		str = "[abc (def(klm()) AND efg(hig(nop()))) ])]";
 		System.out.println(NestedString.parse(str, "(", ")", true));
-		ind = IUtilities.findClosingIndex(str,
-				IConstants.Keywords.SmlBrkt);
-		//System.out.println("Close index: " + ind + ": " + str.substring(0, ind));
 		str = "(abc{ (def(klm()) AND efg(hig(nop()))) })";
 		System.out.println(NestedString.parse(str, "(", ")", true));
-		ind = IUtilities.findClosingIndex(str,
-				IConstants.Keywords.SmlBrkt);
-		//System.out.println("Close index: " + ind + ": " + str.substring(0, ind));
 		System.exit(0);
 		String[] inputGSL = new String[] {
 				"IamUser where name regexMatch /^<root_account>$/i should not have passwordLastUsed after(-90, 'days')",

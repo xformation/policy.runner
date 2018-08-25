@@ -1,11 +1,6 @@
 package com.synectiks.policy.runner.utils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
-
 import com.synectiks.commons.utils.IUtils;
-import com.synectiks.policy.runner.utils.IConstants.Keywords;
 
 /**
  * @author Rajesh
@@ -73,37 +68,5 @@ public interface IUtilities {
 			query = query.substring(key.length());
 		}
 		return (IUtils.isNullOrEmpty(query) ? "" : query.trim());
-	}
-
-	/**
-	 * Method to find-out the closing index of group operator.
-	 * @param input
-	 * @param grp
-	 * @return
-	 */
-	static int findClosingIndex(String input, Keywords grp) {
-		System.out.println(input + " -> " + grp.getKey());
-		if (!IUtils.isNullOrEmpty(input)) {
-			String open = grp.getGroupStart();
-			String close = grp.getGroupEnd();
-			final int strLen = input.length();
-			final int closeLen = close.length();
-			final int openLen = open.length();
-			int pos = 0;
-			while (pos < strLen - closeLen) {
-				int start = input.indexOf(open, pos);
-				if (start < 0) {
-					break;
-				}
-				start += openLen;
-				final int end = input.indexOf(close, start);
-				if (end < 0) {
-					break;
-				}
-				pos = end + closeLen;
-			}
-			return pos;
-		}
-		return -1;
 	}
 }
