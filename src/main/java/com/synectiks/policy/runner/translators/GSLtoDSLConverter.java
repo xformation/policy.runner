@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.synectiks.policy.runner;
+package com.synectiks.policy.runner.translators;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +13,11 @@ import java.util.Map.Entry;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.synectiks.commons.exceptions.SynectiksException;
 import com.synectiks.commons.utils.IUtils;
+import com.synectiks.policy.runner.utils.IConstants;
+import com.synectiks.policy.runner.utils.IUtilities;
+import com.synectiks.policy.runner.utils.NestedString;
 
 /**
  * Utility class to translate a GSL query into DSL json query for elasticsearch.
@@ -453,7 +457,23 @@ public class GSLtoDSLConverter {
 		return input;
 	}
 
-	public static void main(String... args) {
+	public static void main(String... args) throws SynectiksException {
+		String str = "rajesh (abc (def(klm()) AND efg(hig(nop()))) ) kumar";
+		System.out.println(NestedString.parse(str, "(", ")", true));
+		int ind = IUtilities.findClosingIndex(str,
+				IConstants.Keywords.SmlBrkt);
+		//System.out.println("Close index: " + ind + ": " + str.substring(0, ind));
+		str = "[abc (def(klm()) AND efg(hig(nop()))) ])]";
+		System.out.println(NestedString.parse(str, "(", ")", true));
+		ind = IUtilities.findClosingIndex(str,
+				IConstants.Keywords.SmlBrkt);
+		//System.out.println("Close index: " + ind + ": " + str.substring(0, ind));
+		str = "(abc{ (def(klm()) AND efg(hig(nop()))) })";
+		System.out.println(NestedString.parse(str, "(", ")", true));
+		ind = IUtilities.findClosingIndex(str,
+				IConstants.Keywords.SmlBrkt);
+		//System.out.println("Close index: " + ind + ": " + str.substring(0, ind));
+		System.exit(0);
 		String[] inputGSL = new String[] {
 				"IamUser where name regexMatch /^<root_account>$/i should not have passwordLastUsed after(-90, 'days')",
 				"DynamoDbTable should have encrypted=true",
