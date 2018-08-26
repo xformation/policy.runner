@@ -6,12 +6,8 @@ package com.synectiks.policy.runner.utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.synectiks.commons.utils.IUtils;
 
 /**
  * @author Rajesh
@@ -55,13 +51,13 @@ public interface IConstants {
 		SnglQuote("'", KWTypes.GROUP),
 		// Keyword
 		HAS("has", KWTypes.KEYWORD),
+		MUST("+", KWTypes.KEYWORD),
 		// Operators
 		EQ("=", KWTypes.OPERATOR),
-		GE(">", KWTypes.OPERATOR),
+		GT(">", KWTypes.OPERATOR),
 		GTE(">=", KWTypes.OPERATOR),
 		LT("<", KWTypes.OPERATOR),
 		LTE("<=", KWTypes.OPERATOR),
-		MUST("+", KWTypes.OPERATOR),
 		NE("!=", KWTypes.OPERATOR),
 		// Wildcards
 		QST("?", KWTypes.WILDCARD),
@@ -144,43 +140,17 @@ public interface IConstants {
 	};
 
 	String _All = "_all";
+	String BOOL = "bool";
 	String FIELD = "field";
 	String FIELDS = "fields";
 	String EXISTS = "exists";
 	String MATCH = "match";
+	String MUST = "must";
+	String MUST_NOT = "must_not";
 	String MULTI_MATCH = "multi_match";
 	String OPERATOR = "operator";
 	String QUERY = "query";
-
-	/**
-	 * Method to create a json object i.e.
-	 * <pre>
-	 * {
-	 * 	qryType: {
-	 * 		key: value
-	 * 	}
-	 * }
-	 * 	OR (if qryType is null or empty)
-	 * {
-	 * 	key: value
-	 * }
-	 * </pre>
-	 * @param qryType
-	 * @param key
-	 * @param value
-	 * @return
-	 */
-	static JSONObject createQuery(String qryType, String key, Object value) {
-		JSONObject json = new JSONObject();
-		try {
-			if (IUtils.isNullOrEmpty(qryType)) {
-				json.put(key, value);
-			} else {
-				json.put(qryType, new JSONObject().put(key, value));
-			}
-		} catch (JSONException e) {
-			logger.error(e.getMessage(), e);
-		}
-		return json;
-	}
+	String REGEXP = "regexp";
+	String SHOULD = "should";
+	String SHOULD_NOT = "should_not";
 }
