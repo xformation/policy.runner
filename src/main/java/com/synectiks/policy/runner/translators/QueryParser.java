@@ -3,6 +3,7 @@
  */
 package com.synectiks.policy.runner.translators;
 
+import java.util.Date;
 import java.util.List;
 
 import org.codehaus.jettison.json.JSONException;
@@ -52,10 +53,18 @@ public class QueryParser implements IConstants {
 		while (qry.length() > 0) {
 			JSONObject exprs = null;
 			if (isStartWithGroup(qry)) {
-
+				// TODO
+			} else if (isStartWithHasKeyword(qry)) {
+				qry = IUtilities.removeProcessedString(qry, Keywords.HAS.getKey());
+				String key = IUtilities.getFirstString(qry);
+				JSONObject json = IUtilities.createQuery(EXISTS, FIELD, key);
+				exprs = IUtilities.createBoolQueryFor(conjType, json);
+				// update query text after removing the processed part.
+				qry = IUtilities.removeProcessedString(qry, key);
 			} else if (isStartWithConjuction(qry)) {
 				Keywords conj = getConjuncOperator(qry);
 				processConjucOperation();
+				// TODO
 			} else if (haveOperator(qry)) {
 				String tkey = IUtilities.getFirstString(qry);
 				// update query to remove the processed part.
@@ -73,13 +82,6 @@ public class QueryParser implements IConstants {
 				String groupValue = extractValue(qry, true);
 				qry = IUtilities.removeProcessedString(qry, groupValue);
 				exprs = processFunctionQuery(conjType, tkey, func, groupValue);
-			} else if (isStartWithHasKeyword(qry)) {
-				qry = IUtilities.removeProcessedString(qry, Keywords.HAS.getKey());
-				String key = IUtilities.getFirstString(qry);
-				JSONObject json = IUtilities.createQuery(EXISTS, FIELD, key);
-				exprs = IUtilities.createBoolQueryFor(conjType, json);
-				// update query text after removing the processed part.
-				qry = IUtilities.removeProcessedString(qry, key);
 			} else {
 				// We have got direct value so make match all query
 				String key = qry;
@@ -102,35 +104,167 @@ public class QueryParser implements IConstants {
 	 * @param value
 	 * @return
 	 */
-	private JSONObject processOperatorQuery(Keywords conjType,
-			String key, Keywords operator, String value) {
+	private JSONObject processOperatorQuery(Keywords conjType, String key,
+			Keywords operator, String value) {
 		if (!IUtils.isNullOrEmpty(key)) {
-			boolean hasMust = false;
-			if (!IUtils.isNullOrEmpty(value) &&
-					value.startsWith(Keywords.MUST.getKey())) {
-				hasMust = true;
-				value = IUtilities.removeProcessedString(value, Keywords.MUST.getKey());
-			}
 			// remove start and end of group operator if any
 			if (isStartWithGroup(value)) {
 				Keywords grpOp = getStartWithGroup(value);
 				value = IUtilities.getGroupValue(value, grpOp, false);
 			}
+			// get function if value has any
+			Keywords func = getFunction(value, false);
+			// Check if value is numeric
+			boolean isNum = IUtilities.isNumeric(value);
 			logger.info("key: {0}, operator: {1}\n value: {2}", key, operator, value);
+			JSONObject json = null;
 			boolean isNot = false;
-			switch(operator) {
+			switch (operator) {
 			case EQ:
 			case GT:
 			case GTE:
 			case LT:
 			case LTE:
+				json = createOperatorQuery(operator, key, value, func, isNum);
+				break;
 			case NE:
+				isNot = true;
+				json = createOperatorQuery(operator, key, value, func, isNum);
+				break;
 			default:
 				logger.warn("Unsupported operator '{0}' found.", operator.getKey());
 				break;
 			}
+			return IUtilities.createBoolQueryFor(conjType, isNot, json);
 		}
 		return null;
+	}
+
+	/**
+	 * Method to create elastic query for equals operator.
+	 * @param op
+	 * @param key
+	 * @param value
+	 * @param func
+	 * @param isNum
+	 * @return
+	 */
+	private JSONObject createOperatorQuery(Keywords op, String key, String value,
+			Keywords func, boolean isNum) {
+		JSONObject json = null;
+		if (!IUtils.isNullOrEmpty(value)) {
+			if (!IUtils.isNull(func)) {
+				json = createDateMatchQuery(op, func, key, value);
+			} else if (isNum) {
+				json = createNumberQuery(op, key, IUtilities.parseNumber(value));
+			} else if (hasWildcard(value)) {
+				json = IUtilities.createQuery(IConstants.WILDCARD, key, value);
+			} else {
+				json = IUtilities.createQuery(IConstants.MATCH, key, value);
+			}
+		}
+		return json;
+	}
+
+	/**
+	 * Method to create elastic query for numeric value
+	 * @param op
+	 * @param key
+	 * @param num
+	 * @return
+	 */
+	private JSONObject createNumberQuery(Keywords op, String key, Number num) {
+		JSONObject json = null;
+		if (op == Keywords.EQ || op == Keywords.NE) {
+			json = IUtilities.createQuery(IConstants.MATCH, key, num);
+		}
+		String dtOp = IUtilities.getESOperatorKey(op);
+		if (IUtils.isNull(json) && !IUtils.isNull(dtOp)) {
+			json = IUtilities.createRangeQuery(key, num, null, dtOp);
+		}
+		return json;
+	}
+
+	/**
+	 * Method to check if value has any wild card
+	 * @param value
+	 * @return
+	 */
+	private boolean hasWildcard(final String value) {
+		if (!IUtils.isNullOrEmpty(value)) {
+			List<Keywords> list = Keywords.list(KWTypes.WILDCARD);
+			for (Keywords kw : list) {
+				if (value.contains(kw.getKey())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Method to get date or range query json
+	 * @param op
+	 * @param func
+	 * @param key
+	 * @param value
+	 * @return
+	 */
+	private JSONObject createDateMatchQuery(Keywords op, Keywords func, String key,
+			String value) {
+		JSONObject json = null;
+		if (!IUtils.isNullOrEmpty(value)) {
+			String val = null, format = null;
+			// We will entertain only todate function here.
+			if (func == Keywords.TODATE) {
+				String grpVal = IUtilities.getGroupValue(value, Keywords.SmlBrkt, false);
+				// check if user has provided format
+				if (!IUtils.isNullOrEmpty(grpVal) && grpVal.contains(",")) {
+					// assume first group as date and second is date format.
+					String[] arr = grpVal.split(",");
+					if (!IUtils.isNull(arr) && arr.length >= 2) {
+						val = IUtilities.getGroupValue(arr[0], Keywords.SnglQuote, false);
+						format = IUtilities.getGroupValue(arr[1], Keywords.SnglQuote,
+								false);
+					}
+				} else {
+					val = grpVal;
+				}
+			} else {
+				logger.warn("Function '" + func + "' is not supported here.");
+			}
+			json = createDateQuery(key, value, format,
+					IUtils.parseDate(val, null, format), op);
+		}
+		return json;
+	}
+
+	/**
+	 * Method to get date match or range query.
+	 * @param key
+	 * @param value
+	 * @param format
+	 * @param date
+	 * @param op
+	 * @return
+	 */
+	private JSONObject createDateQuery(
+			String key, String value, String format, Date date, Keywords op) {
+		JSONObject json = null;
+		if (op == Keywords.EQ || op == Keywords.NE) {
+			if (!IUtils.isNull(date)) {
+				json = IUtilities.createQuery(IConstants.MATCH, key, date.getTime());
+			} else {
+				// We failed to parse it just add it what it is
+				// and let elastic search handle it.
+				json = IUtilities.createQuery(IConstants.MATCH, key, value);
+			}
+		}
+		String dtOp = IUtilities.getESOperatorKey(op);
+		if (IUtils.isNull(json) && !IUtils.isNull(dtOp)) {
+			json = IUtilities.createRangeQuery(key, value, null, dtOp);
+		}
+		return json;
 	}
 
 	/**
@@ -154,8 +288,7 @@ public class QueryParser implements IConstants {
 			}
 			// Extract value now
 			if (isStartWithGroup(qry)) {
-				value = IUtilities.getGroupValue(
-						qry, getStartWithGroup(qry), true);
+				value = IUtilities.getGroupValue(qry, getStartWithGroup(qry), true);
 				if (!IUtils.isNull(func)) {
 					value = func.getKey() + value;
 				}

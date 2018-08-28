@@ -143,6 +143,7 @@ public interface IConstants {
 	String BOOL = "bool";
 	String FIELD = "field";
 	String FIELDS = "fields";
+	String FORMAT = "format";
 	String EXISTS = "exists";
 	String MATCH = "match";
 	String MUST = "must";
@@ -150,7 +151,9 @@ public interface IConstants {
 	String MULTI_MATCH = "multi_match";
 	String OPERATOR = "operator";
 	String QUERY = "query";
+	String RANGE = "range";
 	String REGEXP = "regexp";
 	String SHOULD = "should";
 	String SHOULD_NOT = "should_not";
+	String WILDCARD = "wildcard";
 }

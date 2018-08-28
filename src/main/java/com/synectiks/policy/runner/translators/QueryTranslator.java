@@ -41,7 +41,9 @@ public class QueryTranslator {
 			"key != 'A?c*fg'", // NOT LIKE
 			"key = (value1, value2, value3)", // IN
 			"key != (value1, value2, value3)", // NOT IN
-			"key >= toDate('15/08/2018 13:20:30')",
+			"key >= toDate('2018-08-15 13:20:30')", // Default format: yyyy-MM-dd HH:mm:ss
+			// We can also use elastic date math strings i.e.
+			// https://www.elastic.co/guide/en/elasticsearch/reference/2.4/common-options.html#date-math
 			"key = toDate('15/08/2018 13:20:30.000', 'dd/MM/yyyy hh:mm:ss.SSS')",
 			"key = value OR key = value",
 			"key = value AND key = value",

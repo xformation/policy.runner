@@ -1,5 +1,8 @@
 package com.synectiks.policy.runner.utils;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
+
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -168,6 +171,9 @@ public interface IUtilities {
 	 * @return
 	 */
 	static JSONObject createBoolQueryFor(Keywords conjType, boolean isNot, JSONObject json) {
+		if (!IUtils.isNull(json)) {
+			return null;
+		}
 		JSONObject qry = new JSONObject();
 		try {
 			String key = null;
@@ -230,5 +236,94 @@ public interface IUtilities {
 			return createQuery(IConstants.REGEXP, key, val);
 		}
 		return null;
+	}
+
+	/**
+	 * Method to create range query json i.e.
+	 * <pre>{
+	 *     "range" : {
+	 *         "born" : {
+	 *             "gte": "01/01/2012",
+	 *             "lte": "2013",
+	 *             "format": "dd/MM/yyyy||yyyy"
+	 *         }
+	 *     }
+	 * }
+	 * </pre>
+	 * @param key
+	 * @param value
+	 * @param format
+	 * @param dtOp
+	 * @return null or range query json
+	 */
+	static JSONObject createRangeQuery(String key, Object value, String format,
+			String dtOp) {
+		if (IUtils.isNullOrEmpty(key) || IUtils.isNull(value)) {
+			return null;
+		}
+		JSONObject json = new JSONObject();
+		try {
+			JSONObject rngVal = new JSONObject();
+			rngVal.put(dtOp, value);
+			if (!IUtils.isNullOrEmpty(format)) {
+				rngVal.put(IConstants.FORMAT, format);
+			}
+			json.put(IConstants.RANGE, new JSONObject().put(key, rngVal));
+		} catch (JSONException e) {
+			IConstants.logger.error(e.getMessage(), e);
+		}
+		return json;
+	}
+
+	/**
+	 * Method to check if value is numeric
+	 * @param value
+	 * @return
+	 */
+	static boolean isNumeric(String value) {
+		return IUtils.isNull(parseNumber(value));
+	}
+
+	/**
+	 * Method to parse value as number
+	 * @param value
+	 * @return
+	 */
+	static Number parseNumber(String value) {
+		if (!IUtils.isNullOrEmpty(value)) {
+			try {
+				return NumberFormat.getInstance().parse(value);
+			} catch (ParseException pe) {
+				// ignore it.
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Method to get elastic search range query key for operator
+	 * @param op
+	 * @return
+	 */
+	static String getESOperatorKey(Keywords op) {
+		String key = null;
+		switch(op) {
+		case GT:
+			key  = "gt";
+			break;
+		case GTE:
+			key = "gte";
+			break;
+		case LT:
+			key = "lt";
+			break;
+		case LTE:
+			key = "lte";
+			break;
+		default:
+			IUtils.logger.warn("Unsupported operator '{0}' found.", op.getKey());
+			break;
+		}
+		return key;
 	}
 }
