@@ -2,11 +2,13 @@ package com.synectiks.policy.runner.utils;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.List;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.synectiks.commons.constants.IConsts;
 import com.synectiks.commons.exceptions.SynectiksException;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.utils.IConstants.Keywords;
@@ -278,10 +280,47 @@ public interface IUtilities {
 	/**
 	 * Method to check if value is numeric
 	 * @param value
+	 * @param isGrp 
 	 * @return
 	 */
-	static boolean isNumeric(String value) {
-		return IUtils.isNull(parseNumber(value));
+	static boolean isNumeric(String value, boolean isGrp) {
+		if (isGrp) {
+			List<String> list = IUtils.getListFromString(value, IConsts.DELIM_COMMA);
+			for (String num : list) {
+				// make sure every item is numeric
+				if (IUtils.isNull(parseNumber(num))) {
+					return false;
+				}
+			}
+			return true;
+		} else {
+			return !IUtils.isNull(parseNumber(value));
+		}
+	}
+
+	/**
+	 * Method to get a JSONArray from string
+	 * @param value
+	 * @param isNum
+	 * @return
+	 */
+	static JSONArray getJArrFromString(String value, boolean isNum) {
+		JSONArray arr = new JSONArray();
+		List<String> list = IUtils.getListFromString(value, IConsts.DELIM_COMMA);
+		for (String num : list) {
+			// make sure every item is numeric if isNum true
+			if (isNum) {
+				Number val = parseNumber(num);
+				if (IUtils.isNull(val)) {
+					return null;
+				} else {
+					arr.put(val);
+				}
+			} else {
+				arr.put(value);
+			}
+		}
+		return arr;
 	}
 
 	/**
@@ -325,5 +364,19 @@ public interface IUtilities {
 			break;
 		}
 		return key;
+	}
+
+	/**
+	 * Method to check if this is an IN group match query
+	 * @param op
+	 * @param grpOp
+	 * @return
+	 */
+	static boolean isInQquery(Keywords op, Keywords grpOp) {
+		if ((op == Keywords.EQ || op == Keywords.NE) &&
+				grpOp == Keywords.SmlBrkt) {
+			return true;
+		}
+		return false;
 	}
 }

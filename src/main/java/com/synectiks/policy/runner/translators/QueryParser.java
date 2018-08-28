@@ -107,16 +107,19 @@ public class QueryParser implements IConstants {
 	private JSONObject processOperatorQuery(Keywords conjType, String key,
 			Keywords operator, String value) {
 		if (!IUtils.isNullOrEmpty(key)) {
+			boolean isGrp = false;
 			// remove start and end of group operator if any
 			if (isStartWithGroup(value)) {
 				Keywords grpOp = getStartWithGroup(value);
 				value = IUtilities.getGroupValue(value, grpOp, false);
+				isGrp = IUtilities.isInQquery(operator, grpOp);
 			}
 			// get function if value has any
 			Keywords func = getFunction(value, false);
 			// Check if value is numeric
-			boolean isNum = IUtilities.isNumeric(value);
-			logger.info("key: {0}, operator: {1}\n value: {2}", key, operator, value);
+			boolean isNum = IUtilities.isNumeric(value, isGrp);
+			logger.info("key: {0}, operator: {1}\n value: {2}\nNumber: {3}\nGroup: {4}",
+					key, operator, value, isNum, isGrp);
 			JSONObject json = null;
 			boolean isNot = false;
 			switch (operator) {
@@ -125,11 +128,11 @@ public class QueryParser implements IConstants {
 			case GTE:
 			case LT:
 			case LTE:
-				json = createOperatorQuery(operator, key, value, func, isNum);
+				json = createOperatorQuery(operator, key, value, func, isNum, isGrp);
 				break;
 			case NE:
 				isNot = true;
-				json = createOperatorQuery(operator, key, value, func, isNum);
+				json = createOperatorQuery(operator, key, value, func, isNum, isGrp);
 				break;
 			default:
 				logger.warn("Unsupported operator '{0}' found.", operator.getKey());
@@ -147,20 +150,28 @@ public class QueryParser implements IConstants {
 	 * @param value
 	 * @param func
 	 * @param isNum
+	 * @param isGrp 
 	 * @return
 	 */
 	private JSONObject createOperatorQuery(Keywords op, String key, String value,
-			Keywords func, boolean isNum) {
+			Keywords func, boolean isNum, boolean isGrp) {
 		JSONObject json = null;
 		if (!IUtils.isNullOrEmpty(value)) {
 			if (!IUtils.isNull(func)) {
 				json = createDateMatchQuery(op, func, key, value);
 			} else if (isNum) {
-				json = createNumberQuery(op, key, IUtilities.parseNumber(value));
+				json = createNumberQuery(op, key, value, isGrp);
 			} else if (hasWildcard(value)) {
 				json = IUtilities.createQuery(IConstants.WILDCARD, key, value);
 			} else {
-				json = IUtilities.createQuery(IConstants.MATCH, key, value);
+				Object val = null;
+				if (isGrp) {
+					// It will be a IN query
+					val = IUtilities.getJArrFromString(value, false);
+				} else {
+					val = value;
+				}
+				json = IUtilities.createQuery(IConstants.MATCH, key, val);
 			}
 		}
 		return json;
@@ -170,17 +181,26 @@ public class QueryParser implements IConstants {
 	 * Method to create elastic query for numeric value
 	 * @param op
 	 * @param key
+	 * @param isGrp 
 	 * @param num
 	 * @return
 	 */
-	private JSONObject createNumberQuery(Keywords op, String key, Number num) {
+	private JSONObject createNumberQuery(
+			Keywords op, String key, String value, boolean isGrp) {
 		JSONObject json = null;
 		if (op == Keywords.EQ || op == Keywords.NE) {
+			Object num = null;
+			if (isGrp) {
+				// It will be a IN query
+				num = IUtilities.getJArrFromString(value, true);
+			} else {
+				num = value;
+			}
 			json = IUtilities.createQuery(IConstants.MATCH, key, num);
 		}
 		String dtOp = IUtilities.getESOperatorKey(op);
 		if (IUtils.isNull(json) && !IUtils.isNull(dtOp)) {
-			json = IUtilities.createRangeQuery(key, num, null, dtOp);
+			json = IUtilities.createRangeQuery(key, value, null, dtOp);
 		}
 		return json;
 	}
