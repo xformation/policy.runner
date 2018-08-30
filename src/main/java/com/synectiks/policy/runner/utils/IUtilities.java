@@ -224,16 +224,11 @@ public interface IUtilities {
 	 */
 	static JSONObject createRegexQuery(String key, String groupValue) {
 		if (!IUtils.isNullOrEmpty(key)) {
-			String val = null;
-			if (!IUtils.isNullOrEmpty(groupValue)) {
-				try {
-					val = NestedString.getUpperGroupString(
-							NestedString.parse(groupValue,
-									Keywords.SnglQuote.getGroupStart(),
-									Keywords.SnglQuote.getGroupEnd(), false));
-				} catch (SynectiksException e) {
-					IConstants.logger.error(e.getMessage(), e);
-				}
+			String val = groupValue;
+			if (!IUtils.isNullOrEmpty(groupValue) &&
+					groupValue.startsWith(
+							Keywords.SnglQuote.getGroupStart())) {
+				val = getGroupValue(groupValue, Keywords.SnglQuote, false);
 			}
 			return createQuery(IConstants.REGEXP, key, val);
 		}
@@ -378,5 +373,54 @@ public interface IUtilities {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Method to create multi_match search query i.e.
+	 * <pre>
+	 * {
+	 * 	multi_match: {
+	 * 		query: grpVal,
+	 * 		type: "best_fields",
+	 * 		fields: jarr,
+	 * 		operator: "and"
+	 * 	}
+	 * }
+	 * </pre>
+	 * @param jarr
+	 * @param grpVal
+	 * @param isMust
+	 * @return
+	 */
+	static JSONObject createMultiSearchQuery(
+			JSONArray jarr, String grpVal, boolean isMust) {
+		if (!IUtils.isNull(jarr) && !IUtils.isNullOrEmpty(grpVal)) {
+			JSONObject json = new JSONObject();
+			try {
+				json.put(IConstants.QUERY, grpVal);
+				json.put(IConstants.TYPE, IConstants.BEST_FRIENDS);
+				json.put(IConstants.FIELDS, jarr);
+				if (isMust) {
+					json.put(IConstants.OPERATOR, IConstants.AND);
+				}
+				return new JSONObject().put(IConstants.MULTI_MATCH, json);
+			} catch (JSONException e) {
+				IConstants.logger.error(e.getMessage(), e);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Method to add a length field in json.
+	 * @param json
+	 * @param indx
+	 */
+	static void addLength(JSONObject json, int indx) {
+		try {
+			json.put(IConstants.LENGTH, indx);
+		} catch(JSONException je) {
+			// ignore it.
+		}
 	}
 }

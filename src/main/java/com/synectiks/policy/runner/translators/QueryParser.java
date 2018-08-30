@@ -6,6 +6,7 @@ package com.synectiks.policy.runner.translators;
 import java.util.Date;
 import java.util.List;
 
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
@@ -53,6 +54,11 @@ public class QueryParser implements IConstants {
 		while (qry.length() > 0) {
 			JSONObject exprs = null;
 			if (isStartWithGroup(qry)) {
+				exprs = handleGroupQuery(qry);
+				// TODO
+			} else if (isStartWithConjuction(qry)) {
+				Keywords conj = getConjuncOperator(qry);
+				processConjucOperation();
 				// TODO
 			} else if (isStartWithHasKeyword(qry)) {
 				qry = IUtilities.removeProcessedString(qry, Keywords.HAS.getKey());
@@ -61,10 +67,6 @@ public class QueryParser implements IConstants {
 				exprs = IUtilities.createBoolQueryFor(conjType, json);
 				// update query text after removing the processed part.
 				qry = IUtilities.removeProcessedString(qry, key);
-			} else if (isStartWithConjuction(qry)) {
-				Keywords conj = getConjuncOperator(qry);
-				processConjucOperation();
-				// TODO
 			} else if (haveOperator(qry)) {
 				String tkey = IUtilities.getFirstString(qry);
 				// update query to remove the processed part.
@@ -94,6 +96,65 @@ public class QueryParser implements IConstants {
 		}
 		logger.info("End processing with result: " + result.toString());
 		return result;
+	}
+
+	/**
+	 * Method to process group string.
+	 * @param qry
+	 * @return
+	 */
+	private JSONObject handleGroupQuery(String qry) {
+		if (!IUtils.isNull(qry) && isStartWithGroup(qry)) {
+			Keywords grp = getStartWithGroup(qry);
+			if (grp == Keywords.CptlBrkt) { // This is case of multi_search
+				// process multi-field search;
+				return processMultiMatchSearch(qry);
+			} else if (grp == Keywords.SmlBrkt) {
+				String grpStr = IUtilities.getGroupValue(qry, grp, true);
+				int indx = grpStr.length();
+				qry = IUtilities.removeProcessedString(qry, grpStr);
+				grpStr = IUtilities.getGroupValue(grpStr, grp, false);
+				JSONObject json = processQuery(grpStr, conjType);
+			} else {
+				logger.warn("Unsupported Group operator '{0}' found.", grp);
+			}
+		}
+		return null;
+	}
+
+	private JSONObject processMultiMatchSearch(String query) {
+		if (!IUtils.isNull(query)) {
+			String qry = query;
+			int indx = 0;
+			String grpKey = IUtilities.getGroupValue(qry, Keywords.CptlBrkt, true);
+			indx = grpKey.length();
+			qry = IUtilities.removeProcessedString(qry, grpKey);
+			grpKey = IUtilities.getGroupValue(grpKey, Keywords.CptlBrkt, false);
+			JSONArray jarr = IUtilities.getJArrFromString(grpKey, false);
+			boolean isMust = false;
+			if (qry.startsWith(Keywords.MUST.getKey())) {
+				isMust = true;
+				indx += query.indexOf(Keywords.MUST.getKey()) + 1;
+				qry = IUtilities.removeProcessedString(qry, Keywords.MUST.getKey());
+			}
+			String grpVal = null;
+			if (isStartWithGroup(qry)) {
+				Keywords grp = getStartWithGroup(qry);
+				if (!IUtils.isNull(grp) && grp == Keywords.SmlBrkt) {
+					grpVal = IUtilities.getGroupValue(qry, grp, true);
+					indx += grpVal.length();
+					qry = IUtilities.removeProcessedString(qry, grpVal);
+					grpVal = IUtilities.getGroupValue(qry, grp, false);
+				}
+			} else {
+				grpVal = IUtilities.getFirstString(qry);
+				indx += grpVal.length();
+			}
+			JSONObject json = IUtilities.createMultiSearchQuery(jarr, grpVal, isMust);
+			IUtilities.addLength(json, indx);
+			return json;
+		}
+		return null;
 	}
 
 	/**
@@ -497,7 +558,8 @@ public class QueryParser implements IConstants {
 		if (!IUtils.isNullOrEmpty(qry)) {
 			List<Keywords> list = Keywords.list(KWTypes.KEYWORD);
 			for (Keywords kw : list) {
-				if (qry.startsWith(kw.getKey() + IConsts.SPACE)) {
+				if (kw == Keywords.HAS &&
+						qry.startsWith(kw.getKey() + IConsts.SPACE)) {
 					return true;
 				}
 			}

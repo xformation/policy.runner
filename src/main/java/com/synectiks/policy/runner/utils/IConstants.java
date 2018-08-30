@@ -140,11 +140,14 @@ public interface IConstants {
 	};
 
 	String _All = "_all";
+	String AND = "and";
+	String BEST_FRIENDS = "best_fields";
 	String BOOL = "bool";
 	String FIELD = "field";
 	String FIELDS = "fields";
 	String FORMAT = "format";
 	String EXISTS = "exists";
+	String LENGTH = "length";
 	String MATCH = "match";
 	String MUST = "must";
 	String MUST_NOT = "must_not";
@@ -155,5 +158,6 @@ public interface IConstants {
 	String REGEXP = "regexp";
 	String SHOULD = "should";
 	String SHOULD_NOT = "should_not";
+	String TYPE = "type";
 	String WILDCARD = "wildcard";
 }
