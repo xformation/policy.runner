@@ -4,20 +4,15 @@
 package com.synectiks.policy.runner.translators;
 
 import java.util.Date;
-import java.util.List;
 
 import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.synectiks.commons.constants.IConsts;
-import com.synectiks.commons.exceptions.SynectiksException;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.utils.IConstants;
 import com.synectiks.policy.runner.utils.IUtilities;
-import com.synectiks.policy.runner.utils.NestedString;
 
 /**
  * @author Rajesh
@@ -37,7 +32,7 @@ public class QueryParser implements IConstants {
 	 * @return
 	 */
 	public JSONObject parse() {
-		return processQuery(query, Keywords.AND);
+		return processQuery(query, null);
 	}
 
 	/**
@@ -49,42 +44,57 @@ public class QueryParser implements IConstants {
 	private JSONObject processQuery(String qry, Keywords conjType) {
 		if (IUtils.isNullOrEmpty(qry))
 			return null;
-		JSONObject result = new JSONObject();
-		logger.info("Started processing: " + query);
+		JSONObject result = null;
+		logger.info("Started processing: " + qry);
 		while (qry.length() > 0) {
 			JSONObject exprs = null;
-			if (isStartWithGroup(qry)) {
+			if (IUtilities.isStartWithGroup(qry)) {
+				logger.info("Group: ");
 				exprs = handleGroupQuery(qry);
-				// TODO
-			} else if (isStartWithConjuction(qry)) {
-				Keywords conj = getConjuncOperator(qry);
-				processConjucOperation();
-				// TODO
-			} else if (isStartWithHasKeyword(qry)) {
+				if (!IUtils.isNull(exprs) && exprs.has(IConstants.LENGTH)) {
+					qry = IUtilities.removeProcessedString(
+							qry, exprs.optString(IConstants.LENGTH));
+					exprs.remove(IConstants.LENGTH);
+				}
+			} else if (IUtilities.isStartWithConjuction(qry)) {
+				logger.info("Conjunction: ");
+				Keywords conj = IUtilities.getConjuncOperator(qry);
+				qry = IUtilities.removeProcessedString(qry, conj.getKey());
+				// Set it back to conjType;
+				conjType = conj;
+			} else if (IUtilities.isStartWithHasKeyword(qry)) {
+				logger.info("HAS: ");
 				qry = IUtilities.removeProcessedString(qry, Keywords.HAS.getKey());
 				String key = IUtilities.getFirstString(qry);
 				JSONObject json = IUtilities.createQuery(EXISTS, FIELD, key);
 				exprs = IUtilities.createBoolQueryFor(conjType, json);
 				// update query text after removing the processed part.
 				qry = IUtilities.removeProcessedString(qry, key);
-			} else if (haveOperator(qry)) {
+			} else if (IUtilities.haveOperator(qry)) {
+				logger.info("Operator: ");
 				String tkey = IUtilities.getFirstString(qry);
 				// update query to remove the processed part.
 				qry = IUtilities.removeProcessedString(qry, tkey);
-				Keywords operator = getOperator(qry, false);
+				Keywords operator = IUtilities.getOperator(qry, false);
 				qry = IUtilities.removeProcessedString(qry, operator.getKey());
 				String value = extractValue(qry, false);
+				qry = IUtilities.removeProcessedString(qry, value);
 				exprs = processOperatorQuery(conjType, tkey, operator, value);
-			} else if (haveFunction(qry)) {
+			} else if (IUtilities.haveFunction(qry)) {
+				logger.info("Function: ");
 				String tkey = IUtilities.getFirstString(qry);
 				// update query to remove the processed part.
 				qry = IUtilities.removeProcessedString(qry, tkey);
-				Keywords func = getFunction(qry, false);
-				qry = IUtilities.removeProcessedString(qry, func.getKey());
+				Keywords func = IUtilities.getFunction(qry, false);
 				String groupValue = extractValue(qry, true);
-				qry = IUtilities.removeProcessedString(qry, groupValue);
+				if (!IUtils.isNullOrEmpty(groupValue)) {
+					qry = IUtilities.removeProcessedString(qry, groupValue);
+				} else {
+					qry = IUtilities.removeProcessedString(qry, func.getKey());
+				}
 				exprs = processFunctionQuery(conjType, tkey, func, groupValue);
 			} else {
+				logger.info("Value: ");
 				// We have got direct value so make match all query
 				String key = qry;
 				JSONObject json = IUtilities.createQuery(MATCH, _All, key);
@@ -94,7 +104,7 @@ public class QueryParser implements IConstants {
 			}
 			result = IUtils.deepMerge(exprs, result);
 		}
-		logger.info("End processing with result: " + result.toString());
+		logger.info("End processing with result: " + result);
 		return result;
 	}
 
@@ -104,54 +114,84 @@ public class QueryParser implements IConstants {
 	 * @return
 	 */
 	private JSONObject handleGroupQuery(String qry) {
-		if (!IUtils.isNull(qry) && isStartWithGroup(qry)) {
-			Keywords grp = getStartWithGroup(qry);
+		if (!IUtils.isNull(qry) && IUtilities.isStartWithGroup(qry)) {
+			Keywords grp = IUtilities.getStartWithGroup(qry);
 			if (grp == Keywords.CptlBrkt) { // This is case of multi_search
 				// process multi-field search;
 				return processMultiMatchSearch(qry);
 			} else if (grp == Keywords.SmlBrkt) {
+				JSONObject json = new JSONObject();
 				String grpStr = IUtilities.getGroupValue(qry, grp, true);
-				int indx = grpStr.length();
+				IUtilities.addProcessedKey(json, grpStr);
 				qry = IUtilities.removeProcessedString(qry, grpStr);
 				grpStr = IUtilities.getGroupValue(grpStr, grp, false);
-				JSONObject json = processQuery(grpStr, conjType);
+				if (IUtilities.isStartWithConjuction(qry)) {
+					Keywords conjType = IUtilities.getConjuncOperator(qry);
+					qry = IUtilities.removeProcessedString(qry, conjType.getKey());
+					IUtilities.addProcessedKey(json, conjType.getKey());
+					JSONObject rhs = processQuery(grpStr, conjType);
+					JSONObject lhs = null;
+					if (IUtilities.isStartWithGroup(qry)) {
+						lhs = handleGroupQuery(qry);
+						if (!IUtils.isNull(lhs) && lhs.has(IConstants.LENGTH)) {
+							IUtilities.addProcessedKey(json,
+									lhs.optString(IConstants.LENGTH));
+						}
+					} else {
+						lhs = processQuery(qry, conjType);
+					}
+					json = IUtils.deepMerge(IUtils.deepMerge(rhs, lhs), json);
+				} else {
+					JSONObject expr = processQuery(grpStr, Keywords.AND);
+					json = IUtils.deepMerge(expr, json);
+				}
+				return json;
 			} else {
-				logger.warn("Unsupported Group operator '{0}' found.", grp);
+				logger.warn("Unsupported Group operator '{}' found.", grp);
 			}
 		}
 		return null;
 	}
 
-	private JSONObject processMultiMatchSearch(String query) {
-		if (!IUtils.isNull(query)) {
-			String qry = query;
-			int indx = 0;
+	/**
+	 * Method to generate multi-match query from string
+	 * @param qry
+	 * @return
+	 */
+	private JSONObject processMultiMatchSearch(String qry) {
+		if (!IUtils.isNullOrEmpty(qry)) {
+			JSONObject json = new JSONObject();
 			String grpKey = IUtilities.getGroupValue(qry, Keywords.CptlBrkt, true);
-			indx = grpKey.length();
+			IUtilities.addProcessedKey(json, grpKey);
 			qry = IUtilities.removeProcessedString(qry, grpKey);
 			grpKey = IUtilities.getGroupValue(grpKey, Keywords.CptlBrkt, false);
 			JSONArray jarr = IUtilities.getJArrFromString(grpKey, false);
 			boolean isMust = false;
 			if (qry.startsWith(Keywords.MUST.getKey())) {
 				isMust = true;
-				indx += query.indexOf(Keywords.MUST.getKey()) + 1;
+				IUtilities.addProcessedKey(json, Keywords.MUST.getKey());
 				qry = IUtilities.removeProcessedString(qry, Keywords.MUST.getKey());
 			}
 			String grpVal = null;
-			if (isStartWithGroup(qry)) {
-				Keywords grp = getStartWithGroup(qry);
+			if (IUtilities.isStartWithGroup(qry)) {
+				Keywords grp = IUtilities.getStartWithGroup(qry);
 				if (!IUtils.isNull(grp) && grp == Keywords.SmlBrkt) {
 					grpVal = IUtilities.getGroupValue(qry, grp, true);
-					indx += grpVal.length();
+					IUtilities.addProcessedKey(json, grpVal);
 					qry = IUtilities.removeProcessedString(qry, grpVal);
+					grpVal = IUtilities.getGroupValue(qry, grp, false);
+				} else {
+					grpVal = IUtilities.getGroupValue(qry, grp, true);
+					IUtilities.addProcessedKey(json, grpVal);
 					grpVal = IUtilities.getGroupValue(qry, grp, false);
 				}
 			} else {
 				grpVal = IUtilities.getFirstString(qry);
-				indx += grpVal.length();
+				IUtilities.addProcessedKey(json, grpVal);
 			}
-			JSONObject json = IUtilities.createMultiSearchQuery(jarr, grpVal, isMust);
-			IUtilities.addLength(json, indx);
+			json = IUtils.deepMerge(
+					IUtilities.createMultiSearchQuery(
+							jarr, grpVal, isMust), json);
 			return json;
 		}
 		return null;
@@ -170,16 +210,16 @@ public class QueryParser implements IConstants {
 		if (!IUtils.isNullOrEmpty(key)) {
 			boolean isGrp = false;
 			// remove start and end of group operator if any
-			if (isStartWithGroup(value)) {
-				Keywords grpOp = getStartWithGroup(value);
+			if (IUtilities.isStartWithGroup(value)) {
+				Keywords grpOp = IUtilities.getStartWithGroup(value);
 				value = IUtilities.getGroupValue(value, grpOp, false);
 				isGrp = IUtilities.isInQquery(operator, grpOp);
 			}
 			// get function if value has any
-			Keywords func = getFunction(value, false);
+			Keywords func = IUtilities.getFunction(value, false);
 			// Check if value is numeric
 			boolean isNum = IUtilities.isNumeric(value, isGrp);
-			logger.info("key: {0}, operator: {1}\n value: {2}\nNumber: {3}\nGroup: {4}",
+			logger.info("key: {}, operator: {}\n value: {}\nNumber: {}\nGroup: {}",
 					key, operator, value, isNum, isGrp);
 			JSONObject json = null;
 			boolean isNot = false;
@@ -196,7 +236,7 @@ public class QueryParser implements IConstants {
 				json = createOperatorQuery(operator, key, value, func, isNum, isGrp);
 				break;
 			default:
-				logger.warn("Unsupported operator '{0}' found.", operator.getKey());
+				logger.warn("Unsupported operator '{}' found.", operator.getKey());
 				break;
 			}
 			return IUtilities.createBoolQueryFor(conjType, isNot, json);
@@ -222,7 +262,7 @@ public class QueryParser implements IConstants {
 				json = createDateMatchQuery(op, func, key, value);
 			} else if (isNum) {
 				json = createNumberQuery(op, key, value, isGrp);
-			} else if (hasWildcard(value)) {
+			} else if (IUtilities.hasWildcard(value)) {
 				json = IUtilities.createQuery(IConstants.WILDCARD, key, value);
 			} else {
 				Object val = null;
@@ -267,23 +307,6 @@ public class QueryParser implements IConstants {
 	}
 
 	/**
-	 * Method to check if value has any wild card
-	 * @param value
-	 * @return
-	 */
-	private boolean hasWildcard(final String value) {
-		if (!IUtils.isNullOrEmpty(value)) {
-			List<Keywords> list = Keywords.list(KWTypes.WILDCARD);
-			for (Keywords kw : list) {
-				if (value.contains(kw.getKey())) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	/**
 	 * Method to get date or range query json
 	 * @param op
 	 * @param func
@@ -309,12 +332,17 @@ public class QueryParser implements IConstants {
 								false);
 					}
 				} else {
-					val = grpVal;
+					if (IUtilities.isStartWithGroup(grpVal)) {
+						Keywords grp = IUtilities.getStartWithGroup(grpVal);
+						val = IUtilities.getGroupValue(grpVal, grp, false);
+					} else {
+						val = grpVal;
+					}
 				}
 			} else {
 				logger.warn("Function '" + func + "' is not supported here.");
 			}
-			json = createDateQuery(key, value, format,
+			json = createDateQuery(key, val, format,
 					IUtils.parseDate(val, null, format), op);
 		}
 		return json;
@@ -363,13 +391,14 @@ public class QueryParser implements IConstants {
 				qry = IUtilities.removeProcessedString(qry, Keywords.MUST.getKey());
 			}
 			Keywords func = null;
-			if (isStartWithFunction(qry)) {
-				func = getFunction(qry, false);
+			if (IUtilities.isStartWithFunction(qry)) {
+				func = IUtilities.getFunction(qry, false);
 				qry = IUtilities.removeProcessedString(qry, func.getKey());
 			}
 			// Extract value now
-			if (isStartWithGroup(qry)) {
-				value = IUtilities.getGroupValue(qry, getStartWithGroup(qry), true);
+			if (IUtilities.isStartWithGroup(qry)) {
+				Keywords grp = IUtilities.getStartWithGroup(qry);
+				value = IUtilities.getGroupValue(qry, grp, true);
 				if (!IUtils.isNull(func)) {
 					value = func.getKey() + value;
 				}
@@ -385,85 +414,6 @@ public class QueryParser implements IConstants {
 	}
 
 	/**
-	 * Check if qry starts with an operator
-	 * @param qry
-	 * @return
-	 */
-	private boolean haveOperator(String qry) {
-		return !IUtils.isNull(getOperator(qry, true));
-	}
-
-	/**
-	 * Check if qry starts with an operator
-	 * @param qry
-	 * @return
-	 */
-	private boolean isStartWithOperator(String qry) {
-		return !IUtils.isNull(getOperator(qry, false));
-	}
-
-	/**
-	 * Method to return operator if qry starts with any
-	 * @param qry
-	 * @param hasKey
-	 * @return
-	 */
-	private Keywords getOperator(String qry, boolean hasKey) {
-		if (!IUtils.isNullOrEmpty(qry)) {
-			if (hasKey) {
-				// remove first string assume its query.
-				String key = IUtilities.getFirstString(qry);
-				if (!IUtils.isNullOrEmpty(key)) {
-					qry = qry.substring(key.length() + 1);
-				}
-			}
-			Keywords operator = null;
-			if (!IUtils.isNullOrEmpty(qry)) {
-				List<Keywords> list = Keywords.list(KWTypes.OPERATOR);
-				for (Keywords kw : list) {
-					if (qry.startsWith(kw.getKey())) {
-						if (kw.getKey().length() == 1) {
-							// return only if
-							// there is no double length operator.
-							operator = kw;
-						} else {
-							return kw;
-						}
-					}
-				}
-			}
-			return operator;
-		}
-		return null;
-	}
-
-	/**
-	 * Check if qry starts with group operator
-	 * @param qry
-	 * @return
-	 */
-	private boolean isStartWithGroup(String qry) {
-		return !IUtils.isNull(getStartWithGroup(qry));
-	}
-
-	/**
-	 * Method to return group operator if qry starts with any
-	 * @param qry
-	 * @return
-	 */
-	private Keywords getStartWithGroup(String qry) {
-		if (!IUtils.isNullOrEmpty(qry)) {
-			List<Keywords> list = Keywords.list(KWTypes.GROUP);
-			for (Keywords kw : list) {
-				if (qry.startsWith(kw.getGroupStart())) {
-					return kw;
-				}
-			}
-		}
-		return null;
-	}
-
-	/**
 	 * Method to process function query to get elastic query.
 	 * @param conjType
 	 * @param key
@@ -474,13 +424,13 @@ public class QueryParser implements IConstants {
 	private JSONObject processFunctionQuery(Keywords conjType, String key, Keywords func,
 			String groupValue) {
 		JSONObject json = null;
-		if (!IUtils.isNullOrEmpty(key))
+		if (IUtils.isNullOrEmpty(key))
 			return json;
-		if (!IUtils.isNull(func))
+		if (IUtils.isNull(func))
 			return json;
 		// remove start and end small brakets.
 		groupValue = IUtilities.getGroupValue(groupValue, Keywords.SmlBrkt, false);
-		logger.info("key: {0}, function: {1}\n groupValue: {2}", key, func, groupValue);
+		logger.info("key: {}, function: {}\n groupValue: {}", key, func, groupValue);
 		boolean isNot = false;
 		switch (func) {
 		case ISNULL:
@@ -499,99 +449,10 @@ public class QueryParser implements IConstants {
 			// We should not expect todate method without operator.
 			break;
 		default:
-			logger.warn("Unsupported function '{0}' found.", func.getKey());
+			logger.warn("Unsupported function '{}' found.", func.getKey());
 			break;
 		}
 		return IUtilities.createBoolQueryFor(conjType, isNot, json);
-	}
-
-	/**
-	 * Method to check if query has a function just after key
-	 * @param qry
-	 * @return
-	 */
-	private boolean isStartWithFunction(String qry) {
-		return !IUtils.isNull(getFunction(qry, false));
-	}
-
-	/**
-	 * Method to check if query has a function just after key
-	 * @param qry
-	 * @return
-	 */
-	private boolean haveFunction(String qry) {
-		return !IUtils.isNull(getFunction(qry, true));
-	}
-
-	/**
-	 * Method to find if query has an operator after key, if matches then
-	 * returns the operator or returns null.
-	 * @param qry
-	 * @param hasKey
-	 * @return
-	 */
-	private Keywords getFunction(String qry, boolean hasKey) {
-		if (!IUtils.isNullOrEmpty(qry)) {
-			if (hasKey) {
-				// remove first string assume its query.
-				String key = IUtilities.getFirstString(qry);
-				if (!IUtils.isNullOrEmpty(key)) {
-					qry = qry.substring(key.length() + 1);
-				}
-			}
-			List<Keywords> list = Keywords.list(KWTypes.FUNCTION);
-			for (Keywords kw : list) {
-				if (qry.startsWith(kw.getKey())) {
-					return kw;
-				}
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Check if query starts with has keyword.
-	 * @param qry
-	 * @return
-	 */
-	private boolean isStartWithHasKeyword(String qry) {
-		if (!IUtils.isNullOrEmpty(qry)) {
-			List<Keywords> list = Keywords.list(KWTypes.KEYWORD);
-			for (Keywords kw : list) {
-				if (kw == Keywords.HAS &&
-						qry.startsWith(kw.getKey() + IConsts.SPACE)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Check if query starts with conjunction operator.
-	 * @param qry
-	 * @return
-	 */
-	private boolean isStartWithConjuction(String qry) {
-		return !IUtils.isNull(getConjuncOperator(qry));
-	}
-
-	/**
-	 * Method to find if query starts with any conjunction operator, if matches
-	 * then returns the operator or returns null.
-	 * @param qry
-	 * @return
-	 */
-	private Keywords getConjuncOperator(String qry) {
-		if (!IUtils.isNullOrEmpty(qry)) {
-			List<Keywords> list = Keywords.list(KWTypes.CONJUNCTION);
-			for (Keywords kw : list) {
-				if (query.startsWith(kw.getKey() + IConsts.SPACE)) {
-					return kw;
-				}
-			}
-		}
-		return null;
 	}
 
 }

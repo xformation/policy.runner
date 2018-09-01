@@ -147,7 +147,7 @@ public interface IConstants {
 	String FIELDS = "fields";
 	String FORMAT = "format";
 	String EXISTS = "exists";
-	String LENGTH = "length";
+	String LENGTH = "psdLen";
 	String MATCH = "match";
 	String MUST = "must";
 	String MUST_NOT = "must_not";

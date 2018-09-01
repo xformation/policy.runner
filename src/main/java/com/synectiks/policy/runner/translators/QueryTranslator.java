@@ -31,10 +31,10 @@ public class QueryTranslator {
 			"key >= 10",
 			"key <= 10",
 			"key regex('^R.*esh$')",
-			"key IsNull",
-			"key IsEmpty",
-			"key IsNotNull",
-			"key IsNotEmpty",
+			"key isNull",
+			"key isEmpty",
+			"key isNotNull",
+			"key isNotEmpty",
 			"[key1, key2, *Id] value", // Search value in key fields with wildcard key name
 			"[key1, key2] +\"Rajesh Kumar\"", // Search Rajesh AND Kumar  in key fields multi_match
 			"key = 'A?c*fg'", // LIKE

@@ -11,6 +11,7 @@ import org.codehaus.jettison.json.JSONObject;
 import com.synectiks.commons.constants.IConsts;
 import com.synectiks.commons.exceptions.SynectiksException;
 import com.synectiks.commons.utils.IUtils;
+import com.synectiks.policy.runner.utils.IConstants.KWTypes;
 import com.synectiks.policy.runner.utils.IConstants.Keywords;
 
 /**
@@ -35,7 +36,6 @@ public interface IUtilities {
 	 * @return
 	 */
 	static String getRefinedFirstString(String input, boolean rmList) {
-		System.out.println("first: " + input);
 		if (!IUtils.isNullOrEmpty(input) && input.contains(" ")) {
 			int indx = input.indexOf(" ");
 			String res = null;
@@ -173,7 +173,7 @@ public interface IUtilities {
 	 * @return
 	 */
 	static JSONObject createBoolQueryFor(Keywords conjType, boolean isNot, JSONObject json) {
-		if (!IUtils.isNull(json)) {
+		if (IUtils.isNull(json)) {
 			return null;
 		}
 		JSONObject qry = new JSONObject();
@@ -207,7 +207,7 @@ public interface IUtilities {
 		} catch (JSONException e) {
 			IConstants.logger.error(e.getMessage(), e);
 		}
-		return json;
+		return qry;
 	}
 
 	/**
@@ -312,7 +312,7 @@ public interface IUtilities {
 					arr.put(val);
 				}
 			} else {
-				arr.put(value);
+				arr.put(num);
 			}
 		}
 		return arr;
@@ -355,7 +355,7 @@ public interface IUtilities {
 			key = "lte";
 			break;
 		default:
-			IUtils.logger.warn("Unsupported operator '{0}' found.", op.getKey());
+			IUtils.logger.warn("Unsupported operator '{}' found.", op.getKey());
 			break;
 		}
 		return key;
@@ -412,15 +412,231 @@ public interface IUtilities {
 	}
 
 	/**
+	 * Check if qry starts with group operator
+	 * @param qry
+	 * @return
+	 */
+	static boolean isStartWithGroup(String qry) {
+		return !IUtils.isNull(getStartWithGroup(qry));
+	}
+
+	/**
+	 * Method to return group operator if qry starts with any
+	 * @param qry
+	 * @return
+	 */
+	static Keywords getStartWithGroup(String qry) {
+		if (!IUtils.isNullOrEmpty(qry)) {
+			List<Keywords> list = Keywords.list(KWTypes.GROUP);
+			for (Keywords kw : list) {
+				if (qry.startsWith(kw.getGroupStart())) {
+					return kw;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Method to add a length field in json.
 	 * @param json
-	 * @param indx
+	 * @param key
 	 */
-	static void addLength(JSONObject json, int indx) {
+	static void addProcessedKey(JSONObject json, String key) {
+		if (IUtils.isNullOrEmpty(key))
+			return;
 		try {
-			json.put(IConstants.LENGTH, indx);
+			if (json.has(IConstants.LENGTH)) {
+				String val = json.getString(IConstants.LENGTH);
+				if (addSpace(key)) {
+					key = val + IConsts.SPACE + key;
+				} else {
+					key = val + key;
+				}
+			}
+			json.put(IConstants.LENGTH, key);
 		} catch(JSONException je) {
 			// ignore it.
 		}
+	}
+
+	/**
+	 * Method to check if needs to add space in prefix.
+	 * @param key
+	 * @return
+	 */
+	static boolean addSpace(String key) {
+		if (!IUtils.isNullOrEmpty(key)) {
+			try {
+				Keywords kw = Keywords.valueOf(key);
+				if (IUtils.isNull(kw) &&
+						kw != Keywords.SnglQuote &&
+						kw != Keywords.DblQuote) {
+					return true;
+				}
+			} catch (IllegalArgumentException ie) {
+				//ignore it
+			}
+			if (isStartWithGroup(key)) {
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Check if qry starts with an operator
+	 * @param qry
+	 * @return
+	 */
+	static boolean haveOperator(String qry) {
+		return !IUtils.isNull(getOperator(qry, true));
+	}
+
+	/**
+	 * Check if qry starts with an operator
+	 * @param qry
+	 * @return
+	 */
+	static boolean isStartWithOperator(String qry) {
+		return !IUtils.isNull(getOperator(qry, false));
+	}
+
+	/**
+	 * Method to return operator if qry starts with any
+	 * @param qry
+	 * @param hasKey
+	 * @return
+	 */
+	static Keywords getOperator(String qry, boolean hasKey) {
+		if (!IUtils.isNullOrEmpty(qry)) {
+			if (hasKey) {
+				// remove first string assume its query.
+				String key = getFirstString(qry);
+				qry = removeProcessedString(qry, key);
+			}
+			Keywords operator = null;
+			if (!IUtils.isNullOrEmpty(qry)) {
+				List<Keywords> list = Keywords.list(KWTypes.OPERATOR);
+				for (Keywords kw : list) {
+					if (qry.startsWith(kw.getKey())) {
+						if (kw.getKey().length() == 1) {
+							// return only if
+							// there is no double length operator.
+							operator = kw;
+						} else {
+							return kw;
+						}
+					}
+				}
+			}
+			return operator;
+		}
+		return null;
+	}
+
+	/**
+	 * Method to find if query starts with any conjunction operator, if matches
+	 * then returns the operator or returns null.
+	 * @param qry
+	 * @return
+	 */
+	static Keywords getConjuncOperator(String qry) {
+		if (!IUtils.isNullOrEmpty(qry)) {
+			List<Keywords> list = Keywords.list(KWTypes.CONJUNCTION);
+			for (Keywords kw : list) {
+				if (qry.startsWith(kw.getKey() + IConsts.SPACE)) {
+					return kw;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Check if query starts with conjunction operator.
+	 * @param qry
+	 * @return
+	 */
+	static boolean isStartWithConjuction(String qry) {
+		return !IUtils.isNull(getConjuncOperator(qry));
+	}
+
+	/**
+	 * Check if query starts with has keyword.
+	 * @param qry
+	 * @return
+	 */
+	static boolean isStartWithHasKeyword(String qry) {
+		if (!IUtils.isNullOrEmpty(qry)) {
+			List<Keywords> list = Keywords.list(KWTypes.KEYWORD);
+			for (Keywords kw : list) {
+				if (kw == Keywords.HAS &&
+						qry.startsWith(kw.getKey() + IConsts.SPACE)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Method to find if query has an operator after key, if matches then
+	 * returns the operator or returns null.
+	 * @param qry
+	 * @param hasKey
+	 * @return
+	 */
+	static Keywords getFunction(String qry, boolean hasKey) {
+		if (!IUtils.isNullOrEmpty(qry)) {
+			if (hasKey) {
+				// remove first string assume its query.
+				String key = getFirstString(qry);
+				qry = removeProcessedString(qry, key);
+			}
+			List<Keywords> list = Keywords.list(KWTypes.FUNCTION);
+			for (Keywords kw : list) {
+				if (qry.startsWith(kw.getKey())) {
+					return kw;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Method to check if query has a function just after key
+	 * @param qry
+	 * @return
+	 */
+	static boolean haveFunction(String qry) {
+		return !IUtils.isNull(getFunction(qry, true));
+	}
+
+	/**
+	 * Method to check if query has a function just after key
+	 * @param qry
+	 * @return
+	 */
+	static boolean isStartWithFunction(String qry) {
+		return !IUtils.isNull(getFunction(qry, false));
+	}
+
+	/**
+	 * Method to check if value has any wild card
+	 * @param value
+	 * @return
+	 */
+	static boolean hasWildcard(final String value) {
+		if (!IUtils.isNullOrEmpty(value)) {
+			List<Keywords> list = Keywords.list(KWTypes.WILDCARD);
+			for (Keywords kw : list) {
+				if (value.contains(kw.getKey())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
