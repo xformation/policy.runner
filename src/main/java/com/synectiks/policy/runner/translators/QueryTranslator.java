@@ -30,7 +30,7 @@ public class QueryTranslator {
 			"key != 10",
 			"key >= 10",
 			"key <= 10",
-			"key regex('^R.*esh$')",
+			/*"key regex('^R.*esh$')",
 			"key isNull",
 			"key isEmpty",
 			"key isNotNull",
@@ -47,11 +47,11 @@ public class QueryTranslator {
 			"key = toDate('15/08/2018 13:20:30.000', 'dd/MM/yyyy hh:mm:ss.SSS')",
 			"key = value OR key = value",
 			"key = value AND key = value",
-			"(key = value OR key = value) AND (key = value OR key = value)"
+			"(key1 = value1 OR key2 = value2) AND (key3 = value3 OR key4 = value4)"*/
 		};
 		for (String input : inputs) {
 			JSONObject elsQuery = translateQuery(input);
-			logger.info(input + ": " + elsQuery.toString());
+			logger.info("\nINPUT: {}\nOUTPUT: {}", input, elsQuery.toString());
 		}
 	}
 

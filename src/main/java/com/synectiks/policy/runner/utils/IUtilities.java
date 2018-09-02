@@ -137,12 +137,10 @@ public interface IUtilities {
 	 * Method to create elastic search queryi.e.
 	 * <pre>
 	 * {
-	 * 	query: {
-	 * 		bool: {
-	 * 			conjType:[
-	 * 				{...}
-	 * 			]
-	 * 		}
+	 * 	bool: {
+	 * 		conjType:[
+	 * 			{...}
+	 * 		]
 	 * 	}
 	 * }
 	 * </pre>
@@ -151,34 +149,17 @@ public interface IUtilities {
 	 * @return
 	 */
 	static JSONObject createBoolQueryFor(Keywords conjType, JSONObject json) {
-		return createBoolQueryFor(conjType, false, json);
-	}
-
-	/**
-	 * Method to create elastic search queryi.e.
-	 * <pre>
-	 * {
-	 * 	query: {
-	 * 		bool: {
-	 * 			conjType:[
-	 * 				{...}
-	 * 			]
-	 * 		}
-	 * 	}
-	 * }
-	 * </pre>
-	 * @param conjType
-	 * @param isNot
-	 * @param json
-	 * @return
-	 */
-	static JSONObject createBoolQueryFor(Keywords conjType, boolean isNot, JSONObject json) {
 		if (IUtils.isNull(json)) {
 			return null;
 		}
 		JSONObject qry = new JSONObject();
 		try {
 			String key = null;
+			boolean isNot = false;
+			if (json.has(IConstants.NOT_QRY)) {
+				isNot = json.optBoolean(IConstants.NOT_QRY);
+				json.remove(IConstants.NOT_QRY);
+			}
 			JSONObject mtype = new JSONObject();
 			switch(conjType) {
 			case AND:
@@ -200,10 +181,13 @@ public interface IUtilities {
 				break;
 			}
 			if (!IUtils.isNullOrEmpty(key)) {
-				mtype.put(key, new JSONArray().put(json));
+				if (json.has(IConstants.BOOL)) {
+					mtype.put(key, json);
+				} else {
+					mtype.put(key, new JSONArray().put(json));
+				}
 			}
-			qry.put(IConstants.QUERY,
-					new JSONObject().put(IConstants.BOOL, mtype));
+			qry.put(IConstants.BOOL, mtype);
 		} catch (JSONException e) {
 			IConstants.logger.error(e.getMessage(), e);
 		}
@@ -448,7 +432,7 @@ public interface IUtilities {
 		try {
 			if (json.has(IConstants.LENGTH)) {
 				String val = json.getString(IConstants.LENGTH);
-				if (addSpace(key)) {
+				if (addSpace(key) || endWithConjOp(val)) {
 					key = val + IConsts.SPACE + key;
 				} else {
 					key = val + key;
@@ -458,6 +442,23 @@ public interface IUtilities {
 		} catch(JSONException je) {
 			// ignore it.
 		}
+	}
+
+	/**
+	 * Method to check if value ends with AND or OR
+	 * @param val
+	 * @return
+	 */
+	static boolean endWithConjOp(String val) {
+		if (!IUtils.isNullOrEmpty(val)) {
+			List<Keywords> list = Keywords.list(KWTypes.CONJUNCTION);
+			for (Keywords kw : list) {
+				if (val.endsWith(kw.getKey())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**

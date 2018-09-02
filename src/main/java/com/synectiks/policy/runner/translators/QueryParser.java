@@ -6,10 +6,12 @@ package com.synectiks.policy.runner.translators;
 import java.util.Date;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.synectiks.commons.constants.IConsts;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.utils.IConstants;
 import com.synectiks.policy.runner.utils.IUtilities;
@@ -32,7 +34,15 @@ public class QueryParser implements IConstants {
 	 * @return
 	 */
 	public JSONObject parse() {
-		return processQuery(query, null);
+		JSONObject json = processQuery(query);
+		if (!IUtils.isNull(json)) {
+			try {
+				return new JSONObject().put(IConstants.QUERY, json);
+			} catch (JSONException e) {
+				// ignore it.
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -41,9 +51,10 @@ public class QueryParser implements IConstants {
 	 * @param conjType
 	 * @return
 	 */
-	private JSONObject processQuery(String qry, Keywords conjType) {
+	private JSONObject processQuery(String qry) {
 		if (IUtils.isNullOrEmpty(qry))
 			return null;
+		Keywords conjType = null;
 		JSONObject result = null;
 		logger.info("Started processing: " + qry);
 		while (qry.length() > 0) {
@@ -60,14 +71,17 @@ public class QueryParser implements IConstants {
 				logger.info("Conjunction: ");
 				Keywords conj = IUtilities.getConjuncOperator(qry);
 				qry = IUtilities.removeProcessedString(qry, conj.getKey());
+				// update existing queries to use same operator
+				if (IUtils.isNull(conjType)) {
+					result = IUtilities.createBoolQueryFor(conj, result);
+				}
 				// Set it back to conjType;
 				conjType = conj;
 			} else if (IUtilities.isStartWithHasKeyword(qry)) {
 				logger.info("HAS: ");
 				qry = IUtilities.removeProcessedString(qry, Keywords.HAS.getKey());
 				String key = IUtilities.getFirstString(qry);
-				JSONObject json = IUtilities.createQuery(EXISTS, FIELD, key);
-				exprs = IUtilities.createBoolQueryFor(conjType, json);
+				exprs = IUtilities.createQuery(EXISTS, FIELD, key);
 				// update query text after removing the processed part.
 				qry = IUtilities.removeProcessedString(qry, key);
 			} else if (IUtilities.haveOperator(qry)) {
@@ -96,13 +110,15 @@ public class QueryParser implements IConstants {
 			} else {
 				logger.info("Value: ");
 				// We have got direct value so make match all query
-				String key = qry;
-				JSONObject json = IUtilities.createQuery(MATCH, _All, key);
-				exprs = IUtilities.createBoolQueryFor(conjType, json);
-				// update query text after removing the processed part.
-				qry = IUtilities.removeProcessedString(qry, key);
+				exprs = IUtilities.createQuery(MATCH, _All, qry);
+				// we have processed whole qry text so set it empty.
+				qry = IConsts.EMPTY;
 			}
 			result = IUtils.deepMerge(exprs, result);
+		}
+		// Make it must query if there is no conjunction type exists.
+		if (IUtils.isNull(conjType) && !result.has(IConstants.BOOL)) {
+			result = IUtilities.createBoolQueryFor(Keywords.AND, result);
 		}
 		logger.info("End processing with result: " + result);
 		return result;
@@ -129,20 +145,27 @@ public class QueryParser implements IConstants {
 					Keywords conjType = IUtilities.getConjuncOperator(qry);
 					qry = IUtilities.removeProcessedString(qry, conjType.getKey());
 					IUtilities.addProcessedKey(json, conjType.getKey());
-					JSONObject rhs = processQuery(grpStr, conjType);
+					JSONObject rhs = processQuery(grpStr);
 					JSONObject lhs = null;
 					if (IUtilities.isStartWithGroup(qry)) {
 						lhs = handleGroupQuery(qry);
 						if (!IUtils.isNull(lhs) && lhs.has(IConstants.LENGTH)) {
 							IUtilities.addProcessedKey(json,
 									lhs.optString(IConstants.LENGTH));
+							lhs.remove(IConstants.LENGTH);
 						}
 					} else {
-						lhs = processQuery(qry, conjType);
+						lhs = processQuery(qry);
 					}
-					json = IUtils.deepMerge(IUtils.deepMerge(rhs, lhs), json);
+					logger.info("\nrhs: {}\nlhs: {}", rhs, lhs);
+					JSONObject temp = IUtils.deepMerge(rhs, lhs);
+					logger.info("\nmerged: {}", temp);
+					// add super level conjunction operator in query.
+					json = IUtils.deepMerge(
+							IUtilities.createBoolQueryFor(conjType, temp), json);
+					logger.info("\nfinal: {}", json);
 				} else {
-					JSONObject expr = processQuery(grpStr, Keywords.AND);
+					JSONObject expr = processQuery(grpStr);
 					json = IUtils.deepMerge(expr, json);
 				}
 				return json;
@@ -222,7 +245,6 @@ public class QueryParser implements IConstants {
 			logger.info("key: {}, operator: {}\n value: {}\nNumber: {}\nGroup: {}",
 					key, operator, value, isNum, isGrp);
 			JSONObject json = null;
-			boolean isNot = false;
 			switch (operator) {
 			case EQ:
 			case GT:
@@ -232,14 +254,22 @@ public class QueryParser implements IConstants {
 				json = createOperatorQuery(operator, key, value, func, isNum, isGrp);
 				break;
 			case NE:
-				isNot = true;
 				json = createOperatorQuery(operator, key, value, func, isNum, isGrp);
+				try {
+					json.put(IConstants.NOT_QRY, true);
+				} catch (JSONException e) {
+					// ignore it.
+				}
 				break;
 			default:
 				logger.warn("Unsupported operator '{}' found.", operator.getKey());
 				break;
 			}
-			return IUtilities.createBoolQueryFor(conjType, isNot, json);
+			if (!IUtils.isNull(conjType)) {
+				return IUtilities.createBoolQueryFor(conjType, json);
+			} else {
+				return json;
+			}
 		}
 		return null;
 	}
@@ -431,12 +461,15 @@ public class QueryParser implements IConstants {
 		// remove start and end small brakets.
 		groupValue = IUtilities.getGroupValue(groupValue, Keywords.SmlBrkt, false);
 		logger.info("key: {}, function: {}\n groupValue: {}", key, func, groupValue);
-		boolean isNot = false;
 		switch (func) {
 		case ISNULL:
 		case ISEMPTY:
-			isNot = true;
 			json = IUtilities.createQuery(EXISTS, FIELD, key);
+			try {
+				json.put(IConstants.NOT_QRY, true);
+			} catch (JSONException e) {
+				// ignore it.
+			}
 			break;
 		case ISNOTEMPTY:
 		case ISNOTNULL:
@@ -452,7 +485,11 @@ public class QueryParser implements IConstants {
 			logger.warn("Unsupported function '{}' found.", func.getKey());
 			break;
 		}
-		return IUtilities.createBoolQueryFor(conjType, isNot, json);
+		if (!IUtils.isNull(conjType)) {
+			return IUtilities.createBoolQueryFor(conjType, json);
+		} else {
+			return json;
+		}
 	}
 
 }

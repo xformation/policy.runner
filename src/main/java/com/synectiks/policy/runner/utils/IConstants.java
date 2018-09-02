@@ -152,6 +152,7 @@ public interface IConstants {
 	String MUST = "must";
 	String MUST_NOT = "must_not";
 	String MULTI_MATCH = "multi_match";
+	String NOT_QRY = "isNotQry";
 	String OPERATOR = "operator";
 	String QUERY = "query";
 	String RANGE = "range";
