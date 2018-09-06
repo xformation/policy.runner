@@ -401,7 +401,7 @@ public class QueryParser implements IConstants {
 		}
 		String dtOp = IUtilities.getESOperatorKey(op);
 		if (IUtils.isNull(json) && !IUtils.isNull(dtOp)) {
-			json = IUtilities.createRangeQuery(key, value, null, dtOp);
+			json = IUtilities.createRangeQuery(key, value, format, dtOp);
 		}
 		return json;
 	}

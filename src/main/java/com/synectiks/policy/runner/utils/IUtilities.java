@@ -122,6 +122,13 @@ public interface IUtilities {
 	static JSONObject createQuery(String qryType, String key, Object value) {
 		JSONObject json = new JSONObject();
 		try {
+			if (IUtils.isNull(key)) {
+				return null;
+			} else {
+				// check and add nested path if exists
+				setNestedPath(json, qryType, key, value);
+			}
+			// add key values into json.
 			if (IUtils.isNullOrEmpty(qryType)) {
 				json.put(key, value);
 			} else {
@@ -131,6 +138,38 @@ public interface IUtilities {
 			IConstants.logger.error(e.getMessage(), e);
 		}
 		return json;
+	}
+
+	/**
+	 * Method to extract nested path from key or from value
+	 * if key is field and query type is exists
+	 * @param json
+	 * @param qryType
+	 * @param key
+	 * @param value
+	 */
+	static void setNestedPath(JSONObject json, String qryType, String key, Object value) {
+		String nstPath = null;
+		if (!IUtils.isNullOrEmpty(key) && key.contains(".")) {
+			// handle nested type queries
+			int indx = key.lastIndexOf(".");
+			nstPath = key.substring(0, indx);
+		} else if (!IUtils.isNullOrEmpty(qryType) && IConstants.EXISTS.equals(qryType)) {
+			if (!IUtils.isNullOrEmpty(key) && IConstants.FIELD.equals(key)) {
+				if (!IUtils.isNull(value) && value.toString().contains(".")) {
+					int indx = value.toString().lastIndexOf(".");
+					nstPath = value.toString().substring(0, indx);
+				}
+			}
+		}
+		// set path if its not empty.
+		if (!IUtils.isNullOrEmpty(nstPath)) {
+			try {
+				json.put(IConstants.NST_PTH_QRY, nstPath);
+			} catch (JSONException e) {
+				IConstants.logger.error(e.getMessage(), e);
+			}
+		}
 	}
 
 	/**
@@ -154,44 +193,138 @@ public interface IUtilities {
 		}
 		JSONObject qry = new JSONObject();
 		try {
-			String key = null;
-			boolean isNot = false;
-			if (json.has(IConstants.NOT_QRY)) {
-				isNot = json.optBoolean(IConstants.NOT_QRY);
-				json.remove(IConstants.NOT_QRY);
-			}
+			JSONObject bool = new JSONObject();
+			boolean isNot = isNotQuery(json);
+			String nstQryPath = null;
+			String key = getQueryConjTypeKey(conjType, isNot);
 			JSONObject mtype = new JSONObject();
-			switch(conjType) {
-			case AND:
-				if (isNot) {
-					key = IConstants.MUST_NOT;
-				} else {
-					key = IConstants.MUST;
-				}
-				break;
-			case OR:
-				if (isNot) {
-					key = IConstants.SHOULD_NOT;
-				} else {
-					key = IConstants.SHOULD;
-				}
-				break;
-			default:
-				// leave it unsupported type
-				break;
-			}
 			if (!IUtils.isNullOrEmpty(key)) {
 				if (json.has(IConstants.BOOL)) {
 					mtype.put(key, json);
 				} else {
+					// json can be nested get it here.
+					if(json.has(IConstants.NST_PTH_QRY)) {
+						nstQryPath = json.optString(IConstants.NST_PTH_QRY);
+						json.remove(IConstants.NST_PTH_QRY);
+					}
 					mtype.put(key, new JSONArray().put(json));
 				}
 			}
-			qry.put(IConstants.BOOL, mtype);
+			bool.put(IConstants.BOOL, mtype);
+			// handle nested query here.
+			if (!IUtils.isNullOrEmpty(nstQryPath)) {
+				qry = createNestedBoolQuery(nstQryPath, bool);
+			} else {
+				qry = bool;
+			}
 		} catch (JSONException e) {
 			IConstants.logger.error(e.getMessage(), e);
 		}
 		return qry;
+	}
+
+	/**
+	 * Method to create a nested query for bool query.
+	 * @param nstPath
+	 * @param bool
+	 * @return
+	 */
+	static JSONObject createNestedBoolQuery(String nstPath, JSONObject bool) {
+		if (!IUtils.isNullOrEmpty(nstPath)) {
+			List<String> list = IUtils.getListFromString(nstPath, ".");
+			JSONObject nst = null;
+			for (int i = list.size(); i > 0; i--) {
+				String path = getNestedPath(list, i);
+				nst = createNestedObj(path, (IUtils.isNull(nst) ? bool : nst));
+			}
+			return nst;
+		}
+		return bool;
+	}
+
+	/**
+	 * Method to create nested path object.
+	 * @param list
+	 * @param max
+	 * @return
+	 */
+	static String getNestedPath(List<String> list, int max) {
+		String path = "";
+		for (int i = 0; i < max && i < list.size(); i ++) {
+			if (IUtils.isNullOrEmpty(path)) {
+				path += list.get(i);
+			} else {
+				path += "." + list.get(i);
+			}
+		}
+		return path;
+	}
+
+	/**
+	 * Method to create a nested query object
+	 * @param path
+	 * @param object
+	 * @return
+	 */
+	static JSONObject createNestedObj(String path, JSONObject obj) {
+		if (!IUtils.isNullOrEmpty(path) && !IUtils.isNull(obj)) {
+			JSONObject json = new JSONObject();
+			try {
+				JSONObject nst = new JSONObject();
+				nst.put(IConstants.PATH, path);
+				nst.put(IConstants.QUERY, obj);
+				// Finally add nested into json
+				json.put(IConstants.NESTED, nst);
+			} catch (JSONException e) {
+				IConstants.logger.error(e.getMessage(), e);
+			}
+			return json;
+		}
+		return null;
+	}
+
+	/**
+	 * Method to get query key for conjunction type
+	 * @param conjType
+	 * @param isNot
+	 * @return
+	 */
+	static String getQueryConjTypeKey(Keywords conjType, boolean isNot) {
+		String key = null;
+		switch(conjType) {
+		case AND:
+			if (isNot) {
+				key  = IConstants.MUST_NOT;
+			} else {
+				key = IConstants.MUST;
+			}
+			break;
+		case OR:
+			if (isNot) {
+				key = IConstants.SHOULD_NOT;
+			} else {
+				key = IConstants.SHOULD;
+			}
+			break;
+		default:
+			// leave it unsupported type
+			break;
+		}
+		return key;
+	}
+
+	/**
+	 * Method to check if query is not type
+	 * @param json
+	 * @return
+	 */
+	static boolean isNotQuery(JSONObject json) {
+		boolean res = false;
+		if (!IUtils.isNull(json) && json.has(IConstants.NOT_QRY)) {
+			res = json.optBoolean(IConstants.NOT_QRY);
+			json.remove(IConstants.NOT_QRY);
+		}
+		return res;
 	}
 
 	/**
@@ -242,14 +375,14 @@ public interface IUtilities {
 		if (IUtils.isNullOrEmpty(key) || IUtils.isNull(value)) {
 			return null;
 		}
-		JSONObject json = new JSONObject();
+		JSONObject json = null;
 		try {
 			JSONObject rngVal = new JSONObject();
 			rngVal.put(dtOp, value);
 			if (!IUtils.isNullOrEmpty(format)) {
 				rngVal.put(IConstants.FORMAT, format);
 			}
-			json.put(IConstants.RANGE, new JSONObject().put(key, rngVal));
+			json = createQuery(IConstants.RANGE, key, rngVal);
 		} catch (JSONException e) {
 			IConstants.logger.error(e.getMessage(), e);
 		}

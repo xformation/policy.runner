@@ -23,31 +23,32 @@ public class QueryTranslator {
 	public static void main(String[] args) {
 		String[] inputs = new String[] {
 			"value", // Full text search in all fields- { "query_string": { "query": "abc" } } or { "match": { "_all": "abc" } }
-			"has key", // Check if field exists
-			"key = 'value'",
-			"key > 10",
-			"key < 10",
-			"key != 10",
-			"key >= 10",
-			"key <= 10",
-			/*"key regex('^R.*esh$')",
-			"key isNull",
-			"key isEmpty",
-			"key isNotNull",
-			"key isNotEmpty",
+			"has root.node.key", // Check if field exists
+			/*"root.node.key = 'value'",
+			"root.node.key > 10",
+			"root.node.key < 10",
+			"root.node.key != 10",
+			"root.node.key >= 10",
+			"root.node.key <= 10",
+			"root.node.key regex('^R.*esh$')",
+			"root.node.key isNull",
+			"root.node.key isEmpty",
+			"root.node.key isNotNull",
+			"root.node.key isNotEmpty",
 			"[key1, key2, *Id] value", // Search value in key fields with wildcard key name
 			"[key1, key2] +\"Rajesh Kumar\"", // Search Rajesh AND Kumar  in key fields multi_match
-			"key = 'A?c*fg'", // LIKE
-			"key != 'A?c*fg'", // NOT LIKE
+			"root.node.key = 'A?c*fg'", // LIKE
+			"root.node.sub.key != 'A?c*fg'", // NOT LIKE
 			"key = (value1, value2, value3)", // IN
-			"key != (value1, value2, value3)", // NOT IN
-			"key >= toDate('2018-08-15 13:20:30')", // Default format: yyyy-MM-dd HH:mm:ss
+			"root.key != (value1, value2, value3)", // NOT IN
+			"root.node.key >= toDate('2018-08-15 13:20:30')", // Default format: yyyy-MM-dd HH:mm:ss
+			"root.node.key >= toDate('2018-08-15 13:20:30', 'yyyy-MM-dd HH:mm:ss')",*/
 			// We can also use elastic date math strings i.e.
 			// https://www.elastic.co/guide/en/elasticsearch/reference/2.4/common-options.html#date-math
 			"key = toDate('15/08/2018 13:20:30.000', 'dd/MM/yyyy hh:mm:ss.SSS')",
-			"key = value OR key = value",
+			"root.node.key = value OR root.node.key1 = value",
 			"key = value AND key = value",
-			"(key1 = value1 OR key2 = value2) AND (key3 = value3 OR key4 = value4)"*/
+			"(root.node.key1 = value1 OR key2 = value2) AND (root.node.key3 = value3 OR key4 = value4)"
 		};
 		for (String input : inputs) {
 			JSONObject elsQuery = translateQuery(input);
