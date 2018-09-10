@@ -24,14 +24,11 @@ import com.synectiks.commons.entities.SourceEntity;
 import com.synectiks.commons.entities.SourceMapping;
 import com.synectiks.commons.interfaces.IApiController;
 import com.synectiks.commons.utils.IUtils;
+import com.synectiks.policy.runner.utils.IConstants;
 import com.synectiks.schemas.config.DynamoDbConfig;
 
-/*@SpringBootApplication(scanBasePackageClasses = {
-		Config.class,
-		DynamoDBInit.class,
-		DynamoDbRepository.class})*/
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.synectiks"})
+@ComponentScan(basePackages = { "com.synectiks" })
 public class PolicyApplication {
 
 	private static final Logger logger = LoggerFactory.getLogger(PolicyApplication.class);
@@ -42,6 +39,7 @@ public class PolicyApplication {
 	private DynamoDbConfig dynamoConfig;
 	@Autowired
 	private Config commonConfig;
+
 	@Autowired
 	private Environment env;
 	@Autowired
@@ -57,15 +55,15 @@ public class PolicyApplication {
 	@EventListener(ApplicationReadyEvent.class)
 	public void setIndexAndMapping() {
 		String searchUrl = env.getProperty(IConsts.KEY_SEARCH_URL, "");
-		searchUrl += IApiController.URL_SEARCH + "/setIndexMapping";
+		searchUrl += IApiController.URL_SEARCH + IConstants.SET_INDX_MAPPING_URI;
 		logger.info("searchUrl: " + searchUrl);
-		Map<String, Object> params = IUtils.getRestParamMap(
-				IConsts.PRM_CLASS, SourceEntity.class.getName(),
-				IConsts.PRM_MAPPINGS, SourceMapping.getSourceEntityMapping().toString());
+		Map<String, Object> params = IUtils.getRestParamMap(IConsts.PRM_CLASS,
+				SourceEntity.class.getName(), IConsts.PRM_MAPPINGS,
+				SourceMapping.getSourceEntityMapping().toString());
 		logger.info("Request: " + params);
 		try {
-			Boolean res = IUtils.sendPostRestRequest(rest, searchUrl, null,
-					Boolean.class, params, MediaType.APPLICATION_FORM_URLENCODED);
+			Boolean res = IUtils.sendPostRestRequest(rest, searchUrl, null, Boolean.class,
+					params, MediaType.APPLICATION_FORM_URLENCODED);
 			logger.info("Indexing response: " + res);
 		} catch (Exception ex) {
 			logger.error(ex.getMessage(), ex);

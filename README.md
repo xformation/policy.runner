@@ -26,6 +26,11 @@ Once done you can run the application by executing
 
 	$ java -jar target/policy.runner-exec.jar
 
+### Open in browser ###
+Run application using spring-boot:run and open url, you can input your English queries here to generate the output in json format.
+
+	http://localhost:8098/
+
 ## Application api's documentation ##
 
 ### /search/setIndexMapping

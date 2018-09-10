@@ -164,4 +164,7 @@ public interface IConstants {
 	String SHOULD_NOT = "should_not";
 	String TYPE = "type";
 	String WILDCARD = "wildcard";
+
+	String API_PARSE_QUERY = "/queryParser";
+	String SET_INDX_MAPPING_URI = "/setIndexMapping";
 }
