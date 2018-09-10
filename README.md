@@ -1,4 +1,4 @@
-# policy.runner
+# policy.runner #
 
 ### What is this repository for? ###
 Repository to index any type of json entity to use as policy input doucments for compliance checking.
@@ -33,15 +33,13 @@ Run application using spring-boot:run and open url, you can input your English q
 
 ## Application api's documentation ##
 
-### /search/setIndexMapping
+### /queryParser
 
-Api to create a new index in elastic if not index not exists. Also add the index mappings for new entity. We can call it to update then existing index mappings too using isUpdate field.
+Api to parse input query into elasticsearch DSL query format.
 
 	Method: POST
 	Params:
-		cls	*			String 	fully qualified name of entity class
-		mappings*		String		json object string for mappings of document
-		isUpdate		Boolean	send true if you would like to update the existing index mappings.
+		query		String		query in string format
 	Response:
-		true if new index and mapping get updated successfully in elasticsearch.
+		json  object as elastic-search DSL query
 		

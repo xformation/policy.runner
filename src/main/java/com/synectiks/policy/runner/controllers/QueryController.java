@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.synectiks.commons.interfaces.IApiController;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.translators.QueryParser;
 import com.synectiks.policy.runner.utils.IConstants;
@@ -22,13 +21,17 @@ import com.synectiks.policy.runner.utils.IConstants;
  * @author Rajesh
  */
 @RestController
-@RequestMapping(path = IApiController.QRY_API, method = RequestMethod.POST)
 @CrossOrigin
 public class QueryController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
 
-	@RequestMapping(path = IConstants.API_PARSE_QUERY)
+	/**
+	 * Api to parse input query into elastic-search DSL query format.
+	 * @param query
+	 * @return
+	 */
+	@RequestMapping(path = IConstants.API_PARSE_QUERY, method = RequestMethod.POST)
 	public ResponseEntity<Object> parseQuery(String query) {
 		JSONObject json = null;
 		try {
