@@ -25,6 +25,7 @@ import com.synectiks.commons.entities.SourceMapping;
 import com.synectiks.commons.interfaces.IApiController;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.utils.IConstants;
+import com.synectiks.policy.runner.utils.IUtilities;
 import com.synectiks.schemas.config.DynamoDbConfig;
 
 @SpringBootApplication
@@ -54,17 +55,21 @@ public class PolicyApplication {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void setIndexAndMapping() {
-		String searchUrl = env.getProperty(IConsts.KEY_SEARCH_URL, "");
-		searchUrl += IApiController.URL_SEARCH + IConstants.SET_INDX_MAPPING_URI;
+		String searchHost = env.getProperty(IConsts.KEY_SEARCH_URL, "");
+		String searchUrl = searchHost + IApiController.URL_SEARCH
+				+ IConstants.SET_INDX_MAPPING_URI;
 		logger.info("searchUrl: " + searchUrl);
 		Map<String, Object> params = IUtils.getRestParamMap(IConsts.PRM_CLASS,
 				SourceEntity.class.getName(), IConsts.PRM_MAPPINGS,
 				SourceMapping.getSourceEntityMapping().toString());
 		logger.info("Request: " + params);
 		try {
-			Boolean res = IUtils.sendPostRestRequest(rest, searchUrl, null, Boolean.class,
+			Boolean res = IUtils.sendPostRestRequest(rest,
+					searchUrl, null, Boolean.class,
 					params, MediaType.APPLICATION_FORM_URLENCODED);
 			logger.info("Indexing response: " + res);
+			// Set keys for suggestion
+			IUtilities.fillIndexedKeys(rest, searchHost);
 		} catch (Exception ex) {
 			logger.error(ex.getMessage(), ex);
 		}

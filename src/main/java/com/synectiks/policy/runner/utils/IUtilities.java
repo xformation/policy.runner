@@ -2,14 +2,20 @@ package com.synectiks.policy.runner.utils;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.RestTemplate;
 
 import com.synectiks.commons.constants.IConsts;
+import com.synectiks.commons.entities.SourceEntity;
 import com.synectiks.commons.exceptions.SynectiksException;
+import com.synectiks.commons.interfaces.IApiController;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.utils.IConstants.KWTypes;
 import com.synectiks.policy.runner.utils.IConstants.Keywords;
@@ -18,6 +24,8 @@ import com.synectiks.policy.runner.utils.IConstants.Keywords;
  * @author Rajesh
  */
 public interface IUtilities {
+
+	List<String> srcEntityFields = new ArrayList<>();
 
 	/**
 	 * Method to extract first non space char sequence form input.
@@ -772,5 +780,36 @@ public interface IUtilities {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Method to load SourceEntities Mappings fields if exists.
+	 * @param rest
+	 * @param searchHost
+	 */
+	static void fillIndexedKeys(RestTemplate rest, String searchHost) {
+		String searchUrl = searchHost + IApiController.URL_SEARCH
+				+ IConstants.GET_INDX_MAPPING_URI;
+		IUtils.logger.info("searchUrl: " + searchUrl);
+		Map<String, Object> params = IUtils.getRestParamMap(IConsts.PRM_CLASS,
+				SourceEntity.class.getName(), IConsts.PRM_FLD_ONLY, String.valueOf(true));
+		IUtils.logger.info("Request: " + params);
+		try {
+			Object res = IUtils.sendPostRestRequest(rest,
+					searchUrl, null, List.class,
+					params, MediaType.APPLICATION_FORM_URLENCODED);
+			IUtils.logger.info("Mappings response: " + res);
+			if (!IUtils.isNull(res) && res instanceof List) {
+				@SuppressWarnings("unchecked")
+				List<String> lst = (List<String>) res;
+				for (String key : lst) {
+					if (!srcEntityFields.contains(key)) {
+						srcEntityFields.add(key);
+					}
+				}
+			}
+		} catch (Exception ex) {
+			IUtils.logger.error(ex.getMessage(), ex);
+		}
 	}
 }

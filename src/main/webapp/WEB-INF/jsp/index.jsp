@@ -1,16 +1,37 @@
 <%@ include file="./common/header.jsp"%>
 <%@ include file="./common/navigation.jsp"%>
+<style type="text/css">
+	#suggesstions {
+		float: left;
+		list-style: none;
+		margin-top: -3px;
+		padding: 0;
+		position: absolute;
+	}
+	
+	#suggesstions li {
+		padding: 10px;
+		background: #f0f0f0;
+		border-bottom: #bbb9b9 1px solid;
+	}
+	
+	#suggesstions li:hover {
+		background: #ece3d2;
+		cursor: pointer;
+	}
+</style>
 <div class="container">
 	<div style="text-align: center">
 		<h3>Welcome Query Parsing</h3>
 	</div>
 	<div>
-		<form:form>
+		<form:form autocomplete="off">
 			<p>
 				<label for="query">Query:</label>
-				<textarea id="query" style="width: 100%" id="query" rows="3"
-					placeholder="Enter your query string..."></textarea>
-			</p>
+				<input type="text" id="query"
+					style="width: 100%" placeholder="Enter your query string..." />
+			<div id="suggesstion-box"></div></p>
+
 			<div style="text-align: center">
 				<input id="submit" type="button" value="Translate"
 					onclick="submitForm(event)" />
@@ -25,6 +46,80 @@
 </div>
 
 <script>
+	$(document).ready(
+		function() {
+			$("#query").keyup(
+				function() {
+					var val = getQuery($(this).val());
+					if (val && val === "") {
+						return;
+					}
+					$("#query").css("background",
+							"#FFF url(images/loaderIcon.gif) no-repeat right center");
+					$.ajax({
+						type : "POST",
+						url : "/suggestKey",
+						data : 'query=' + val,
+						success : function(data) {
+							setTimeout(function() {
+								$("#suggesstion-box").show();
+								setSuggestions(data);
+								$("#query").css("background", "#FFF");
+							}, 1000);
+						}
+					});
+				});
+		});
+
+	function getQuery(val) {
+		var res = val.trim();
+		if (val && val.length > 0) {
+			var arr = val.split(" ");
+			if (arr) {
+				var len = arr.length;
+				if (len > 1) {
+					var cur = arr[len - 1];
+					var prev = arr[len - 2].toLowerCase();
+					switch(prev) {
+					case 'has':
+					case 'and':
+					case 'or':
+					case '[':
+						res = cur;
+						break;
+					default:
+						res = "";
+					}
+				}
+			}
+		}
+		if (res && res !== "" && res.indexOf("[") == 0) {
+			res = res.substring(1);
+		}
+		return res;
+	}
+	function setSuggestions(data) {
+		if (data && Array.isArray(data)) {
+			var html = "<ul id='suggesstions'>";
+			for (var i = 0; i < data.length; i++) {
+				var key = data[i];
+				html += "<li onclick=\"selectSuggestion('" + key + "')\">" + key + "</li>";
+			}
+			html += "</ul>";
+			$("#suggesstion-box").html(html);
+		}
+	}
+	function selectSuggestion(val) {
+		alert("val: " + val);
+		var prev = $("#query").val().trim();
+		alert("prev: " + prev);
+		var res = getQuery(prev);
+		alert("res: " + res);
+		var sel = prev.replace(new RegExp(res + '$'), val);
+		alert("sel: " + sel);
+		$("#query").val(sel);
+		$("#suggesstion-box").hide();
+	}
 	function submitForm(e) {
 		e.preventDefault();
 		$.ajax({

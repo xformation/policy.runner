@@ -166,5 +166,7 @@ public interface IConstants {
 	String WILDCARD = "wildcard";
 
 	String API_PARSE_QUERY = "/queryParser";
+	String API_SUGGEST = "/suggestKey";
+	String GET_INDX_MAPPING_URI = "/getIndexMapping";
 	String SET_INDX_MAPPING_URI = "/setIndexMapping";
 }
