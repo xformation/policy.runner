@@ -15,8 +15,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.synectiks.commons.exceptions.SynectiksException;
 import com.synectiks.commons.utils.IUtils;
-import com.synectiks.policy.runner.utils.IConstants;
-import com.synectiks.policy.runner.utils.IUtilities;
 import com.synectiks.policy.runner.utils.NestedString;
 
 /**

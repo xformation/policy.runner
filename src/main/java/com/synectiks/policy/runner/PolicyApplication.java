@@ -36,8 +36,10 @@ public class PolicyApplication {
 
 	private static ConfigurableApplicationContext ctx;
 
+	@SuppressWarnings("unused")
 	@Autowired
 	private DynamoDbConfig dynamoConfig;
+	@SuppressWarnings("unused")
 	@Autowired
 	private Config commonConfig;
 

@@ -1,11 +1,11 @@
 # policy.runner #
 
-### What is this repository for? ###
+### What is this repository for?
 
-Repository to index any type of json entity to use as policy input doucments for compliance checking.
+Repository to index any type of json entity to use as policy input documents for compliance checking.
 Also you can create and register new policies with scripting details to run and validate on items.
 ---
-We have plan to extend this project to provide a new query language for policy varification and execution using some scripting and command-line utilities.
+We have plan to extend this project to provide a new query language for policy verification and execution using some scripting and command-line utilities.
 
 ### How to import project for editing ###
 

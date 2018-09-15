@@ -29,8 +29,9 @@
 			<p>
 				<label for="query">Query:</label>
 				<input type="text" id="query"
-					style="width: 100%" placeholder="Enter your query string..." />
-			<div id="suggesstion-box"></div></p>
+					style="width: 100%" placeholder="Enter your query string..."></input>
+				<div id="suggesstion-box"></div>
+			</p>
 
 			<div style="text-align: center">
 				<input id="submit" type="button" value="Translate"
@@ -110,13 +111,9 @@
 		}
 	}
 	function selectSuggestion(val) {
-		alert("val: " + val);
 		var prev = $("#query").val().trim();
-		alert("prev: " + prev);
 		var res = getQuery(prev);
-		alert("res: " + res);
 		var sel = prev.replace(new RegExp(res + '$'), val);
-		alert("sel: " + sel);
 		$("#query").val(sel);
 		$("#suggesstion-box").hide();
 	}
