@@ -27,11 +27,23 @@ public class WebController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebController.class);
 
+	/**
+	 * MVC api to redirect on index page.
+	 * @param model
+	 * @return
+	 */
 	@RequestMapping(path = "/", method = RequestMethod.GET)
 	public String index(ModelMap model) {
 		return "index";
 	}
 
+	/**
+	 * API to translate the input query string into elastic DSL query.
+	 * @param req
+	 * @param res
+	 * @param body
+	 * @return
+	 */
 	@RequestMapping(path = "/translate", method = RequestMethod.POST)
 	public @ResponseBody ObjectNode translate(HttpServletRequest req,
 			HttpServletResponse res, @RequestBody String body) {
