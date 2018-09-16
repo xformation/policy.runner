@@ -44,7 +44,7 @@ MVC controller path to load index page for application.
 
 ### /translate
 
-MVC API to translate the input query string into elastic DSL query.
+API to translate the input query string into elastic DSL query.
 
 	Method: POST
 	Params:

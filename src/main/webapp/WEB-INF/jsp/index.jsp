@@ -52,7 +52,7 @@
 			$("#query").keyup(
 				function() {
 					var val = getQuery($(this).val());
-					if (val && val === "") {
+					if (val && (val === "" || val.length < 2)) {
 						return;
 					}
 					$("#query").css("background",
@@ -81,20 +81,35 @@
 				if (len > 1) {
 					var cur = arr[len - 1];
 					var prev = arr[len - 2].toLowerCase();
-					switch(prev) {
-					case 'has':
-					case 'and':
-					case 'or':
-					case '[':
-						res = cur;
-						break;
-					default:
-						res = "";
+					if (prev && prev.indexOf(",") === (prev.length - 1)){
+						for (var i = len - 2; i >=0; i --) {
+							var pVal = arr[i];
+							if (pVal && pVal.indexOf("[") == 0) {
+								res = cur;
+								break;
+							} else if (pVal.indexOf(",") === (pVal.length - 1)) {
+								continue;
+							} else {
+								break;
+							}
+						}
+					} else {
+						switch(prev) {
+						case 'has':
+						case 'and':
+						case 'or':
+						case '[':
+							res = cur;
+							break;
+						default:
+							res = "";
+						}
 					}
 				}
 			}
 		}
-		if (res && res !== "" && res.indexOf("[") == 0) {
+		if (res && res !== "" &&
+				(res.indexOf("[") == 0 || res.indexOf("(") == 0)) {
 			res = res.substring(1);
 		}
 		return res;
