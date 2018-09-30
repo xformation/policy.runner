@@ -12,6 +12,8 @@ import java.util.Map.Entry;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.synectiks.commons.exceptions.SynectiksException;
 import com.synectiks.commons.utils.IUtils;
@@ -22,6 +24,8 @@ import com.synectiks.policy.runner.utils.NestedString;
  * @author Rajesh
  */
 public class GSLtoDSLConverter {
+
+	private static final Logger logger = LoggerFactory.getLogger(GSLtoDSLConverter.class);
 
 	private static Map<String, String> mapCriteriaKey = new HashMap<>();
 	private static Map<String, String> mapGrpOpertr = new HashMap<>();
@@ -91,7 +95,7 @@ public class GSLtoDSLConverter {
 		if (IUtils.isNull(json)) {
 			json = new JSONObject();
 		}
-		System.out.println("processCriterias: " + input);
+		logger.info("processCriterias: " + input);
 		if (!IUtils.isNullOrEmpty(input)) {
 			Entry<String, String> opKey = getCriteriaEntry(input);
 			if (!IUtils.isNull(opKey)) {
@@ -118,13 +122,13 @@ public class GSLtoDSLConverter {
 				dest.put(key, src.get(key));
 			}
 		}
-		System.out.println("copyJsonItems: " + dest.toString());
+		logger.info("copyJsonItems: " + dest.toString());
 		return dest;
 	}
 
 	private static JSONObject evaluateExpression(String input, String opCrtria)
 			throws JSONException {
-		System.out.println("op: " + opCrtria + ", input: " + input);
+		logger.info("op: " + opCrtria + ", input: " + input);
 		List<JSONObject> resList = null;
 		String qryKey = null;
 		JSONObject json = new JSONObject();
@@ -147,7 +151,7 @@ public class GSLtoDSLConverter {
 				} else if (resList.size() == 1) {
 					json.put(opCrtria, resList.get(0));
 				} else {
-					System.out.println("No match found: " + resList);
+					logger.info("No match found: " + resList);
 				}
 			}
 		}
@@ -155,7 +159,7 @@ public class GSLtoDSLConverter {
 	}
 
 	private static List<JSONObject> createQuery(String input, String qryType) {
-		System.out.println("createQuery: " + input);
+		logger.info("createQuery: " + input);
 		List<JSONObject> list = new ArrayList<>();
 		if (!IUtils.isNullOrEmpty(input)) {
 			String key = getFirstString(input);
@@ -175,9 +179,9 @@ public class GSLtoDSLConverter {
 						if (isOperator(op)) {
 							input = input.substring(op.length()).trim();
 							val = extractValue(input);
-							System.out.println("Extracted group value: " + val);
+							logger.info("Extracted group value: " + val);
 							input = input.substring(val.length()).trim();
-							System.out.println("Value: " + val);
+							logger.info("Value: " + val);
 							list.add(processQryStr(qryType, op, key, val));
 							// check Conjunction 
 							String conjunc = getConjunctionOperator(input);
@@ -186,7 +190,7 @@ public class GSLtoDSLConverter {
 								list.addAll(createQuery(input, qryType));
 							}
 						} else {
-							System.out.println("Un-handled case of parsing: "
+							logger.info("Un-handled case of parsing: "
 									+ input);
 						}
 					}
@@ -210,7 +214,7 @@ public class GSLtoDSLConverter {
 	}
 
 	private static String extractValue(String input) {
-		System.out.println("Extract: " + input);
+		logger.info("Extract: " + input);
 		if (!IUtils.isNullOrEmpty(input)) {
 			if (isGroupValues(input)) {
 				int indx = getGrpClosingIndex(input);
@@ -221,7 +225,7 @@ public class GSLtoDSLConverter {
 				return getFirstString(input);
 			}
 		}
-		System.out.println("Unable to parse value: " + input);
+		logger.info("Unable to parse value: " + input);
 		return null;
 	}
 
@@ -230,7 +234,7 @@ public class GSLtoDSLConverter {
 			Entry<String, String> grpOp = getGroupOperator(input);
 			if (!IUtils.isNull(grpOp)) {
 				int indx = findClosingIndex(grpOp, input);
-				System.out.println("Closing-index: " + indx);
+				logger.info("Closing-index: " + indx);
 				return indx;
 			}
 		}
@@ -350,10 +354,10 @@ public class GSLtoDSLConverter {
 		case "<":
 			break;
 		default:
-			System.out.println("Unknown operator: " + op);
+			logger.info("Unknown operator: " + op);
 			break;
 		}
-		System.out.println("processQryStr: " + json.toString());
+		logger.info("processQryStr: " + json.toString());
 		return json;
 	}
 
@@ -402,7 +406,7 @@ public class GSLtoDSLConverter {
 	}
 
 	private static JSONObject processFilters(String input) throws JSONException {
-		System.out.println("processFilters: " + input);
+		logger.info("processFilters: " + input);
 		return null;//processCriterias(input, null);
 	}
 
@@ -426,7 +430,7 @@ public class GSLtoDSLConverter {
 	}
 
 	private static String getFirstString(String input, boolean rmList) {
-		System.out.println("first: " + input);
+		logger.info("first: " + input);
 		if (!IUtils.isNullOrEmpty(input) && input.contains(" ")) {
 			int indx = input.indexOf(" ");
 			String res = null;
@@ -451,17 +455,17 @@ public class GSLtoDSLConverter {
 				input = input.substring(indx, input.indexOf(">"));
 			}
 		}
-		System.out.println("refined: " + input);
+		logger.info("refined: " + input);
 		return input;
 	}
 
 	public static void main(String... args) throws SynectiksException {
 		String str = "rajesh (abc (def(klm()) AND efg(hig(nop()))) ) kumar";
-		System.out.println(NestedString.parse(str, "(", ")", false));
+		logger.info(NestedString.parse(str, "(", ")", false).toString());
 		str = "[abc (def(klm()) AND efg(hig(nop()))) ])]";
-		System.out.println(NestedString.parse(str, "(", ")", true));
+		logger.info(NestedString.parse(str, "(", ")", true).toString());
 		str = "(abc{ (def(klm()) AND efg(hig(nop()))) })";
-		System.out.println(NestedString.parse(str, "(", ")", true));
+		logger.info(NestedString.parse(str, "(", ")", true).toString());
 		System.exit(0);
 		String[] inputGSL = new String[] {
 				"IamUser where name regexMatch /^<root_account>$/i should not have passwordLastUsed after(-90, 'days')",
@@ -479,14 +483,14 @@ public class GSLtoDSLConverter {
 				"SecurityGroup where name != 'default' should not have networkAssetsStats contain-all [ count = 0 ]",
 				"ApplicationLoadBalancer should not have listeners contain [ certificates contain [ expiration before(30, 'days') ] ]" };
 		for (String input : inputGSL) {
-			System.out.println(input + "\n---------------");
+			logger.info(input + "\n---------------");
 			String result = null;
 			try {
 				result = translateInDSL(input);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			System.out.println("---------------\n" + result + "\n---------------");
+			logger.info("---------------\n" + result + "\n---------------");
 		}
 	}
 
