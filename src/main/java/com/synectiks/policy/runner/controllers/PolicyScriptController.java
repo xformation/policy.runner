@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -83,8 +84,8 @@ public class PolicyScriptController implements IApiController {
 
 	@Override
 	@RequestMapping(path = IConsts.API_CREATE)
-	public ResponseEntity<Object> create(
-			ObjectNode entity, HttpServletRequest request) {
+	public ResponseEntity<Object> create(@RequestBody ObjectNode entity,
+			HttpServletRequest request) {
 		Policy policy = null;
 		try {
 			String user = IUtils.getUserFromRequest(request);
@@ -100,14 +101,14 @@ public class PolicyScriptController implements IApiController {
 
 	@Override
 	@RequestMapping(path = IConsts.API_UPDATE)
-	public ResponseEntity<Object> update(
-			ObjectNode entity, HttpServletRequest request) {
+	public ResponseEntity<Object> update(@RequestBody ObjectNode entity,
+			HttpServletRequest request) {
 		return create(entity, request);
 	}
 
 	@Override
 	@RequestMapping(path = IConsts.API_DELETE)
-	public ResponseEntity<Object> delete(ObjectNode entity) {
+	public ResponseEntity<Object> delete(@RequestBody ObjectNode entity) {
 		if (!IUtils.isNull(entity.get(IDBConsts.Col_ID))) {
 			return deleteById(entity.get(IDBConsts.Col_ID).asText());
 		}

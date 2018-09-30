@@ -26,12 +26,12 @@
 	</div>
 	<div>
 		<form:form autocomplete="off">
-			<p>
+			<div>
 				<label for="query">Query:</label>
 				<input type="text" id="query"
-					style="width: 100%" placeholder="Enter your query string..."></input>
+					style="width: 100%" placeholder="Enter your query string..."/>
 				<div id="suggesstion-box"></div>
-			</p>
+			</div>
 
 			<div style="text-align: center">
 				<input id="submit" type="button" value="Translate"

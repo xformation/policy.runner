@@ -279,10 +279,10 @@ public interface IUtilities {
 			JSONObject json = new JSONObject();
 			try {
 				JSONObject nst = new JSONObject();
-				nst.put(IConstants.PATH, path);
+				nst.put(IConsts.PATH, path);
 				nst.put(IConstants.QUERY, obj);
 				// Finally add nested into json
-				json.put(IConstants.NESTED, nst);
+				json.put(IConsts.NESTED, nst);
 			} catch (JSONException e) {
 				IConstants.logger.error(e.getMessage(), e);
 			}
