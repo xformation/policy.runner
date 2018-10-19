@@ -29,13 +29,13 @@ import com.synectiks.policy.runner.repositories.PolicyRepository;
 /**
  * @author Rajesh
  */
+@CrossOrigin
 @RestController
 @RequestMapping(path = IApiController.PLC_API, method = RequestMethod.POST)
-@CrossOrigin
-public class PolicyScriptController implements IApiController {
+public class PolicyController implements IApiController {
 
 	private static final Logger logger = LoggerFactory.getLogger(
-			PolicyScriptController.class);
+			PolicyController.class);
 
 	@Autowired
 	private PolicyRepository repository;

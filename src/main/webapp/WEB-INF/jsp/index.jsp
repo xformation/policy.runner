@@ -22,7 +22,7 @@
 </style>
 <div class="container">
 	<div style="text-align: center">
-		<h3>Welcome Query Parsing</h3>
+		<h3>Welcome Query Translator</h3>
 	</div>
 	<div>
 		<form:form autocomplete="off">

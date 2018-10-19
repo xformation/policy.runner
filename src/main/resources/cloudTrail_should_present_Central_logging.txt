@@ -1,0 +1,55 @@
+Policy : Central logging should be enabled 
+(Atleast one Trail should have all the use cases for control to be passed.)
+LM_2_1_cloudtrail_centralized_encrypted_lfi(self):
+        # This rule verifies that a defined CloudTrail Trail send all logs to centralized S3 bucket.
+        
+        # Use cases
+        # The following logic is applied:
+        # No Trail is configured -> NOT COMPLIANT
+        # The Trail value is inactive -> NOT COMPLIANT
+        # The Trail value is not including global resources -> NOT COMPLIANT
+        # The Trail value is not multi-region -> NOT COMPLIANT
+        # The Trail alue has no Log File Integrity -> NOT COMPLIANT
+        # The Trail value is not logging all Management Events -> NOT COMPLIANT
+        # The Trail is not logging all S3 Data Events -> NOT COMPLIANT
+        # 
+        # The Trail value is not logging in S3_BUCKET_NAME -> NOT COMPLIANT
+        # AWS_CLOUDTRAIL_KMS_KEY_ARN is not defined -> NOT COMPLIANT
+        # The Trail value is not encrypted -> NOT COMPLIANT
+        # The Trail value is not encrypted using AWS_CLOUDTRAIL_KMS_KEY_ARN -> NOT COMPLIANT
+        # The Trail value is active, global, log file integrity, logging in S3_BUCKET_NAME and encrypted with AWS_CLOUDTRAIL_KMS_KEY_ARN -> COMPLIANT
+
+Request Syntax
+
+response = client.describe_trails(
+    trailNameList=[
+        'string',
+    ],
+    includeShadowTrails=True|False
+)
+
+Response Syntax
+
+{
+    'trailList': [
+        {
+            'Name': 'string',
+            'S3BucketName': 'string',
+            'S3KeyPrefix': 'string',
+            'SnsTopicName': 'string',
+            'SnsTopicARN': 'string',
+            'IncludeGlobalServiceEvents': True|False,
+            'IsMultiRegionTrail': True|False,
+            'HomeRegion': 'string',
+            'TrailARN': 'string',
+            'LogFileValidationEnabled': True|False,
+            'CloudWatchLogsLogGroupArn': 'string',
+            'CloudWatchLogsRoleArn': 'string',
+            'KmsKeyId': 'string',
+            'HasCustomEventSelectors': True|False
+        },
+    ]
+}
+
+
+        

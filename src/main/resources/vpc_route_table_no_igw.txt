@@ -1,0 +1,68 @@
+Policy : vpc_main_route_table_no_igw
+route table should not have internet gateway
+
+Rule: if any route['GatewayId'].startswith('igw-') ,means it contains internet gateway and control will be failed
+
+response = client.describe_route_tables(
+    Filters=[
+        {
+            'Name': 'string',
+            'Values': [
+                'string',
+            ]
+        },
+    ],
+    DryRun=True|False,
+    RouteTableIds=[
+        'string',
+    ],
+    NextToken='string',
+    MaxResults=123
+)
+Response Syntax
+
+{
+    'RouteTables': [
+        {
+            'Associations': [
+                {
+                    'Main': True|False,
+                    'RouteTableAssociationId': 'string',
+                    'RouteTableId': 'string',
+                    'SubnetId': 'string'
+                },
+            ],
+            'PropagatingVgws': [
+                {
+                    'GatewayId': 'string'
+                },
+            ],
+            'RouteTableId': 'string',
+            'Routes': [
+                {
+                    'DestinationCidrBlock': 'string',
+                    'DestinationIpv6CidrBlock': 'string',
+                    'DestinationPrefixListId': 'string',
+                    'EgressOnlyInternetGatewayId': 'string',
+                    'GatewayId': 'string',
+                    'InstanceId': 'string',
+                    'InstanceOwnerId': 'string',
+                    'NatGatewayId': 'string',
+                    'NetworkInterfaceId': 'string',
+                    'Origin': 'CreateRouteTable'|'CreateRoute'|'EnableVgwRoutePropagation',
+                    'State': 'active'|'blackhole',
+                    'VpcPeeringConnectionId': 'string'
+                },
+            ],
+            'Tags': [
+                {
+                    'Key': 'string',
+                    'Value': 'string'
+                },
+            ],
+            'VpcId': 'string'
+        },
+    ],
+    'NextToken': 'string'
+}
+

@@ -12,17 +12,22 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.synectiks.commons.entities.Policy;
 import com.synectiks.commons.utils.IUtils;
+import com.synectiks.policy.runner.PolicyExecutor;
+import com.synectiks.policy.runner.repositories.PolicyRepository;
 import com.synectiks.policy.runner.translators.QueryParser;
 import com.synectiks.policy.runner.utils.IConstants;
 import com.synectiks.policy.runner.utils.IUtilities;
@@ -35,6 +40,9 @@ import com.synectiks.policy.runner.utils.IUtilities;
 public class QueryController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
+
+	@Autowired
+	private PolicyRepository repository;
 
 	/**
 	 * API to translate the input query string into elastic DSL query.
@@ -111,5 +119,30 @@ public class QueryController {
 			}
 		}
 		return ResponseEntity.status(HttpStatus.CREATED).body(suggestions);
+	}
+
+	/**
+	 * Api to parse input query into elastic-search DSL query format.
+	 * @param query
+	 * @return
+	 */
+	@RequestMapping(path = IConstants.API_EXECUTE, method = RequestMethod.POST)
+	public ResponseEntity<Object> execute(String policyId,
+			@RequestParam(required = false) String source,
+			@RequestParam(required = false) String field) {
+		JSONObject json = null;
+		if (!IUtils.isNullOrEmpty(policyId)) {
+			try {
+				Policy policy = repository.findById(policyId);
+				PolicyExecutor executor = new PolicyExecutor(policy, source, field);
+				json = executor.execute();
+			} catch (Throwable th) {
+				logger.error(th.getMessage(), th);
+				return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
+						.body(IUtils.getFailedResponse(th.getMessage()));
+			}
+		}
+		return ResponseEntity.status(HttpStatus.CREATED).body(json);
+		
 	}
 }

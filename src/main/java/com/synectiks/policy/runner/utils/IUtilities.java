@@ -812,4 +812,30 @@ public interface IUtilities {
 			IUtils.logger.error(ex.getMessage(), ex);
 		}
 	}
+
+	/**
+	 * Method to check if key match with Policy(.*)Policy rule.
+	 * @param key
+	 * @return
+	 */
+	static boolean isPolicy(String key) {
+		if (!IUtils.isNullOrEmpty(key) &&
+				(key.startsWith("Policy") || key.endsWith("Policy"))) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Create a nested key value with parent and key names.
+	 * @param parent
+	 * @param key
+	 * @return
+	 */
+	static String getNestedKey(String parent, String key) {
+		if (!IUtils.isNullOrEmpty(parent) && !IUtils.isNullOrEmpty(key)) {
+			return parent + "." + key;
+		}
+		return key;
+	}
 }

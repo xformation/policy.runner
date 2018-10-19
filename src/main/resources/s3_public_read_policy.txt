@@ -1,0 +1,68 @@
+policy : DP_4_2_s3_bucket_public_read_prohibited.
+s3 buckets should not have public read access.
+
+client = boto3.client('s3')
+client.list_buckets()
+Response Syntax
+{
+    'Buckets': [
+        {
+            'Name': 'string',
+            'CreationDate': datetime(2015, 1, 1)
+        },
+    ],
+    'Owner': {
+        'DisplayName': 'string',
+        'ID': 'string'
+    }
+}
+
+acl_bucket = s3_client.get_bucket_acl(Bucket=bucket['Name'])
+
+Response Syntax
+{
+    'Owner': {
+        'DisplayName': 'string',
+        'ID': 'string'
+    },
+    'Grants': [
+        {
+            'Grantee': {
+                'DisplayName': 'string',
+                'EmailAddress': 'string',
+                'ID': 'string',
+                'Type': 'CanonicalUser'|'AmazonCustomerByEmail'|'Group',
+                'URI': 'string'
+            },
+            'Permission': 'FULL_CONTROL'|'WRITE'|'WRITE_ACP'|'READ'|'READ_ACP'
+        },
+    ]
+}
+Response Structure
+
+(dict) --
+Owner (dict) --
+DisplayName (string) --
+ID (string) --
+Grants (list) --
+A list of grants.
+
+(dict) --
+Grantee (dict) --
+DisplayName (string) --
+Screen name of the grantee.
+
+EmailAddress (string) --
+Email address of the grantee.
+
+ID (string) --
+The canonical user ID of the grantee.
+
+Type (string) --
+Type of grantee
+
+URI (string) --
+URI of the grantee group.
+
+Permission (string) --
+Specifies the permission given to the grantee.
