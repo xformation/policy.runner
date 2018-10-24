@@ -11,10 +11,9 @@ $(document).ready(
 			success : function(data) {
 				setTimeout(function() {
 					var select = $('#rules');
-					$.each(data.values, function(i, item) {
-						var rule = "{ id: '" + item.id + "'}";
+					$.each(data, function(i, item) {
 						select.append("<option value='"
-								+ rule + "'>" + item.name + "</option>");
+								+ item.id + "'>" + item.name + "</option>");
 					});
 				}, 1000);
 			}
@@ -23,7 +22,6 @@ $(document).ready(
 );
 function submitForm(e) {
 	e.preventDefault();
-	var selVal = $("#selPolicy").val();
 	$.ajax({
 		url : "/policy/create",
 		type : 'POST',
@@ -48,22 +46,28 @@ function submitForm(e) {
 		<h3>Create New Policy</h3>
 	</div>
 	<form:form autocomplete="off">
-	<table>
+	<table style="width: 100%;">
 		<tr>
 			<td>
 				<label for="name">Name:</label>
-				<input type="text" id="name" placeholder="Enter your full name..."/>
+			</td>
+			<td>
+				<input type="text" id="name" placeholder="Enter policy name..."/>
 			</td>
 		</tr>
 		<tr>
 			<td>
 				<label for="description">Description:</label>
+			</td>
+			<td>
 				<input type="text" id="description" placeholder="Enter description..."/>
 			</td>
 		</tr>
 		<tr>
 			<td>
 				<label for="rules">Select Rules...</label>
+			</td>
+			<td>
 				<select id="rules" size="5" multiple="multiple">
 				</select>
 			</td>
@@ -71,8 +75,7 @@ function submitForm(e) {
 	</table>
 
 	<div style="text-align: center">
-		<input id="submit" type="button" value="Save"
-			onclick="submitForm(event)" />
+		<input id="submit" type="button" value="Save" onclick="submitForm(event)" />
 	</div>
 	</form:form>
 	<div class="msg">

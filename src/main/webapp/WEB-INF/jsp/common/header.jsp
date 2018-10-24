@@ -8,6 +8,12 @@
 		<link href="webjars/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
 		<script src="webjars/jquery/2.2.1/jquery.min.js"></script>
 		<script src="webjars/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+		<style type="text/css">
+		input {
+			margin: 5px 0 5px 0;
+		}
+		</style>
 	</head>
 
 	<body>

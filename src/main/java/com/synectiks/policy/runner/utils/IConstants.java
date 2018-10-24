@@ -168,4 +168,5 @@ public interface IConstants {
 	String API_SUGGEST = "/suggestKey";
 	String GET_INDX_MAPPING_URI = "/getIndexMapping";
 	String SET_INDX_MAPPING_URI = "/setIndexMapping";
+	String ELASTIC_QUERY = "/elsQuery";
 }

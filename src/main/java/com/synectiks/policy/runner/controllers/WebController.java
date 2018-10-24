@@ -28,4 +28,34 @@ public class WebController {
 		return "index";
 	}
 
+	/**
+	 * MVC api to redirect on index page.
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(path = "/executor", method = RequestMethod.GET)
+	public String executor(ModelMap model) {
+		return "executor";
+	}
+
+	/**
+	 * MVC api to redirect on index page.
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(path = "/policy", method = RequestMethod.GET)
+	public String policy(ModelMap model) {
+		return "policy";
+	}
+
+	/**
+	 * MVC api to redirect on index page.
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(path = "/rule", method = RequestMethod.GET)
+	public String rule(ModelMap model) {
+		return "rule";
+	}
+
 }

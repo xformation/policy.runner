@@ -20,7 +20,6 @@ import org.springframework.web.client.RestTemplate;
 import com.synectiks.commons.constants.IConsts;
 import com.synectiks.commons.entities.SourceEntity;
 import com.synectiks.commons.entities.SourceMapping;
-import com.synectiks.commons.interfaces.IApiController;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.utils.IConstants;
 import com.synectiks.policy.runner.utils.IUtilities;
@@ -45,12 +44,14 @@ public class PolicyApplication {
 		}
 	}
 
+	public static <T> T getBean(Class<T> clz) {
+		return ctx.getBean(clz);
+	}
+
 	@EventListener(ApplicationReadyEvent.class)
 	public void setIndexAndMapping() {
 		populateEnvPropertiesInSystem();
-		String searchHost = env.getProperty(IConsts.KEY_SEARCH_URL, "");
-		String searchUrl = searchHost + IApiController.URL_SEARCH
-				+ IConstants.SET_INDX_MAPPING_URI;
+		String searchUrl = IUtilities.getSearchUrl(env, IConstants.SET_INDX_MAPPING_URI);
 		logger.info("searchUrl: " + searchUrl);
 		Map<String, Object> params = IUtils.getRestParamMap(IConsts.PRM_CLASS,
 				SourceEntity.class.getName(), IConsts.PRM_MAPPINGS,
@@ -62,7 +63,7 @@ public class PolicyApplication {
 					params, MediaType.APPLICATION_FORM_URLENCODED);
 			logger.info("Indexing response: " + res);
 			// Set keys for suggestion
-			IUtilities.fillIndexedKeys(rest, searchHost);
+			IUtilities.fillIndexedKeys(rest, env);
 		} catch (Exception ex) {
 			logger.error(ex.getMessage(), ex);
 		}

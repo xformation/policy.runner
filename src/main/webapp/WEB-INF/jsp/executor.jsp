@@ -11,7 +11,7 @@ $(document).ready(
 			success : function(data) {
 				setTimeout(function() {
 					var select = $('#selPolicy');
-					$.each(data.values, function(i, item) {
+					$.each(data, function(i, item) {
 						select.append("<option value='"
 								+ item.id + "'>" + item.name + "</option>");
 					});
@@ -26,7 +26,6 @@ function submitForm(e) {
 	$.ajax({
 		url : "/execute",
 		type : 'POST',
-		contentType : "application/json",
 		data : "policyId=" + selVal,
 		success : function(json) {
 			var pretty = JSON.stringify(json, undefined, 4);
@@ -50,8 +49,7 @@ function submitForm(e) {
 	</div>
 
 	<div style="text-align: center">
-		<input id="submit" type="button" value="Translate"
-			onclick="submitForm(event)" />
+		<input id="submit" type="button" value="Execute" onclick="submitForm(event)" />
 	</div>
 	</form:form>
 	<div class="msg">

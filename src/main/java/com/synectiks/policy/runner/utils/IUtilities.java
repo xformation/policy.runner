@@ -9,6 +9,7 @@ import java.util.Map;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
@@ -229,6 +230,28 @@ public interface IUtilities {
 			IConstants.logger.error(e.getMessage(), e);
 		}
 		return qry;
+	}
+
+	/**
+	 * Method to create a boolean query with json array.
+	 * @param kw
+	 * @param arr
+	 * @return
+	 */
+	static JSONObject createBoolQueryFor(Keywords kw, JSONArray arr) {
+		if (IUtils.isNull(arr) || arr.length() == 0) {
+			return null;
+		}
+		JSONObject bool = new JSONObject();
+		try {
+			String key = getQueryConjTypeKey(kw, false);
+			JSONObject mtype = new JSONObject();
+			mtype.put(key, arr);
+			bool.put(IConstants.BOOL, mtype);
+		} catch (JSONException e) {
+			IConstants.logger.error(e.getMessage(), e);
+		}
+		return bool;
 	}
 
 	/**
@@ -787,9 +810,8 @@ public interface IUtilities {
 	 * @param rest
 	 * @param searchHost
 	 */
-	static void fillIndexedKeys(RestTemplate rest, String searchHost) {
-		String searchUrl = searchHost + IApiController.URL_SEARCH
-				+ IConstants.GET_INDX_MAPPING_URI;
+	static void fillIndexedKeys(RestTemplate rest, Environment env) {
+		String searchUrl = getSearchUrl(env, IConstants.GET_INDX_MAPPING_URI);
 		IUtils.logger.info("searchUrl: " + searchUrl);
 		Map<String, Object> params = IUtils.getRestParamMap(IConsts.PRM_CLASS,
 				SourceEntity.class.getName(), IConsts.PRM_FLD_ONLY, String.valueOf(true));
@@ -837,5 +859,16 @@ public interface IUtilities {
 			return parent + "." + key;
 		}
 		return key;
+	}
+
+	/**
+	 * Method to generate and get search api urls.
+	 * @param env
+	 * @param srcApiPath
+	 * @return
+	 */
+	static String getSearchUrl(Environment env, String srcApiPath) {
+		String searchHost = env.getProperty(IConsts.KEY_SEARCH_URL, "");
+		return searchHost + IApiController.URL_SEARCH + srcApiPath;
 	}
 }

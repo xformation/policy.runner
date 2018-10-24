@@ -19,14 +19,14 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.synectiks.commons.entities.Policy;
+import com.synectiks.commons.entities.PolicyRuleResult;
 import com.synectiks.commons.utils.IUtils;
-import com.synectiks.policy.runner.PolicyExecutor;
+import com.synectiks.policy.runner.executor.PolicyExecutor;
 import com.synectiks.policy.runner.repositories.PolicyRepository;
 import com.synectiks.policy.runner.translators.QueryParser;
 import com.synectiks.policy.runner.utils.IConstants;
@@ -42,7 +42,7 @@ public class QueryController {
 	private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
 
 	@Autowired
-	private PolicyRepository repository;
+	private PolicyRepository policies;
 
 	/**
 	 * API to translate the input query string into elastic DSL query.
@@ -91,7 +91,7 @@ public class QueryController {
 			return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
 					.body(IUtils.getFailedResponse(th.getMessage()));
 		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(json);
+		return ResponseEntity.status(HttpStatus.OK).body(json);
 	}
 
 	/**
@@ -118,7 +118,7 @@ public class QueryController {
 						.body(IUtils.getFailedResponse(th.getMessage()));
 			}
 		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(suggestions);
+		return ResponseEntity.status(HttpStatus.OK).body(suggestions);
 	}
 
 	/**
@@ -127,14 +127,13 @@ public class QueryController {
 	 * @return
 	 */
 	@RequestMapping(path = IConstants.API_EXECUTE, method = RequestMethod.POST)
-	public ResponseEntity<Object> execute(String policyId,
-			@RequestParam(required = false) String source,
-			@RequestParam(required = false) String field) {
-		JSONObject json = null;
+	public ResponseEntity<Object> execute(String policyId) {
+		PolicyRuleResult json = null;
+		logger.info("Policy to execute: " + policyId);
 		if (!IUtils.isNullOrEmpty(policyId)) {
 			try {
-				Policy policy = repository.findById(policyId);
-				PolicyExecutor executor = new PolicyExecutor(policy, source, field);
+				Policy policy = policies.findById(policyId);
+				PolicyExecutor executor = new PolicyExecutor(policy);
 				json = executor.execute();
 			} catch (Throwable th) {
 				logger.error(th.getMessage(), th);
@@ -142,7 +141,7 @@ public class QueryController {
 						.body(IUtils.getFailedResponse(th.getMessage()));
 			}
 		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(json);
+		return ResponseEntity.status(HttpStatus.OK).body(json);
 		
 	}
 }
