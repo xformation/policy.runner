@@ -128,7 +128,7 @@ public class QueryController {
 	 */
 	@RequestMapping(path = IConstants.API_EXECUTE, method = RequestMethod.POST)
 	public ResponseEntity<Object> execute(String policyId) {
-		PolicyRuleResult json = null;
+		List<PolicyRuleResult> json = null;
 		logger.info("Policy to execute: " + policyId);
 		if (!IUtils.isNullOrEmpty(policyId)) {
 			try {

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +17,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.synectiks.commons.constants.IConsts;
 import com.synectiks.commons.entities.Policy;
-import com.synectiks.commons.entities.Rule;
 import com.synectiks.commons.entities.PolicyRuleResult;
+import com.synectiks.commons.entities.Rule;
 import com.synectiks.commons.entities.SourceEntity;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.PolicyApplication;
@@ -62,13 +61,39 @@ public class PolicyExecutor {
 	 * Method to execute policy to collect and store results.
 	 * @return
 	 */
-	public PolicyRuleResult execute() {
+	public List<PolicyRuleResult> execute() {
+		List<PolicyRuleResult> results = null;
 		if (!IUtils.isNull(policy)) {
 			logger.info("Executing policy: " + policy.getName());
-			JSONObject query = createPolicyQuery();
-			return executeQuery(query, 1);
+			//JSONObject query = createPolicyQuery();
+			if (!IUtils.isNull(policy) && !IUtils.isNull(policy.getRules()) &&
+					policy.getRules().size() > 0) {
+				results = new ArrayList<>();
+				JSONArray arr = new JSONArray();
+				for (String ruleid : policy.getRules()) {
+					logger.info("rule id: " + ruleid);
+					// Reload rule by id
+					Rule rule = rules.findById(ruleid);
+					if (!IUtils.isNull(rule)) {
+						List<JSONObject> checks = processRule(rule);
+						for (JSONObject check : checks) {
+							arr.put(check);
+						}
+						JSONObject query = IUtilities.addKeyValInJson(null,
+								IConstants.QUERY,
+								IUtilities.createBoolQueryFor(Keywords.AND, checks));
+						PolicyRuleResult res = executeQuery(query, 1);
+						if (!IUtils.isNull(res) && res.getTotalHits() > 0) {
+							logger.info("Found " + res.getTotalHits() + " matches.");
+							res.setPolicyId(policy.getId());
+							res.setRuleId(rule.getId());
+							results.add(res);
+						}
+					}
+				}
+			}
 		}
-		return null;
+		return results;
 	}
 
 	/**
@@ -102,6 +127,7 @@ public class PolicyExecutor {
 	 * Method to translate policy into elastic query.
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	private JSONObject createPolicyQuery() {
 		if (!IUtils.isNull(policy) && !IUtils.isNull(policy.getRules()) &&
 				policy.getRules().size() > 0) {
@@ -116,13 +142,9 @@ public class PolicyExecutor {
 				}
 			}
 			if (arr.length() > 0) {
-				JSONObject json = new JSONObject();
-				try {
-					json.put(IConstants.QUERY, IUtilities.createBoolQueryFor(Keywords.AND, arr));
-				} catch (JSONException e) {
-					logger.error(e.getMessage(), e);
-				}
-				return json;
+				return IUtilities.addKeyValInJson(null,
+						IConstants.QUERY,
+						IUtilities.createBoolQueryFor(Keywords.AND, arr));
 			}
 		}
 		return null;

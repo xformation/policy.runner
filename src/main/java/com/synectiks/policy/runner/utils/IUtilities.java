@@ -233,6 +233,42 @@ public interface IUtilities {
 	}
 
 	/**
+	 * Utility method to add key, value in json
+	 * @param json
+	 * @param key
+	 * @param value
+	 * @return
+	 */
+	static JSONObject addKeyValInJson(JSONObject json, String key, Object value) {
+		if (IUtils.isNull(json)) {
+			json = new JSONObject();
+		}
+		try {
+			json.put(key, value);
+		} catch (JSONException e) {
+			// ignore it.
+		}
+		return json;
+	}
+
+	/**
+	 * Method to create a boolean query with json array.
+	 * @param kw
+	 * @param list
+	 * @return
+	 */
+	static JSONObject createBoolQueryFor(Keywords kw, List<JSONObject> list) {
+		if (!IUtils.isNull(list) && !list.isEmpty()) {
+			JSONArray arr = new JSONArray();
+			for (JSONObject obj : list) {
+				arr.put(obj);
+			}
+			return createBoolQueryFor(kw, arr);
+		}
+		return null;
+	}
+
+	/**
 	 * Method to create a boolean query with json array.
 	 * @param kw
 	 * @param arr
