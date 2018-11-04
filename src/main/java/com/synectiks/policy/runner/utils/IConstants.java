@@ -103,6 +103,15 @@ public interface IConstants {
 			return type == KWTypes.OPERATOR;
 		}
 
+		public boolean isRangeOperator() {
+			if (type == KWTypes.OPERATOR) {
+				if (!key.equals("=") && !key.equals("!=")) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 		public String getGroupStart() {
 			char c = 0;
 			if (isGroupOperator()) {
