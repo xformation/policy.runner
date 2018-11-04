@@ -35,7 +35,7 @@
 
 ### Web-interface uses:
 
-	![Auto-Complete View]./images/Autocomplete.png
+	![Auto-Complete View](images/Autocomplete.png)
 
 
 ### How to import project for editing ###
