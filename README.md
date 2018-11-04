@@ -35,7 +35,7 @@
 
 ### Web-interface uses:
 
-	[![Auto-Complete View](https://github.com/xformation/policy.runner/blob/master/images/Autocomplete.png)]
+![Auto-Complete View](https://github.com/xformation/policy.runner/blob/master/images/Autocomplete.png)
 
 
 ### How to import project for editing ###
