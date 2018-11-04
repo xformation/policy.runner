@@ -95,7 +95,7 @@ public class QueryController {
 	}
 
 	/**
-	 * Api to parse input query into elastic-search DSL query format.
+	 * Api to provide auto complete suggestions for input string.
 	 * @param query
 	 * @return
 	 */
@@ -122,7 +122,8 @@ public class QueryController {
 	}
 
 	/**
-	 * Api to parse input query into elastic-search DSL query format.
+	 * Api to execute a policy by its id and generate response
+	 * with matching elastic document ids list.
 	 * @param query
 	 * @return
 	 */
