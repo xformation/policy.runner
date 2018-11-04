@@ -35,7 +35,25 @@
 
 ### Web-interface uses:
 
+#### Auto-Complete/Query translator View
+
 ![Auto-Complete View](https://github.com/xformation/policy.runner/blob/master/images/Autocomplete.png)
+
+#### Query to DSL translator View
+
+![Query to DSL view](https://github.com/xformation/policy.runner/blob/master/images/QueryToDSL.png)
+
+#### Create Rule View
+
+![Create Rule View](https://github.com/xformation/policy.runner/blob/master/images/CreateRule.png)
+
+#### Create Policy View
+
+![Create Policy View](https://github.com/xformation/policy.runner/blob/master/images/CreatePolicy.png)
+
+#### Policy-executor View
+
+![Policy executor View](https://github.com/xformation/policy.runner/blob/master/images/Policy-execute.png)
 
 
 ### How to import project for editing ###
