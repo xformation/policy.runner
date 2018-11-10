@@ -22,6 +22,7 @@ import com.synectiks.commons.entities.Rule;
 import com.synectiks.commons.entities.SourceEntity;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.PolicyApplication;
+import com.synectiks.policy.runner.repositories.ResultRepository;
 import com.synectiks.policy.runner.repositories.RuleRepository;
 import com.synectiks.policy.runner.translators.QueryParser;
 import com.synectiks.policy.runner.utils.IConstants;
@@ -40,6 +41,8 @@ public class PolicyExecutor {
 	private RestTemplate rest;
 	@Autowired
 	private RuleRepository rules;
+	@Autowired
+	private ResultRepository resRepo;
 
 	private Policy policy;
 
@@ -87,6 +90,8 @@ public class PolicyExecutor {
 							logger.info("Found " + res.getTotalHits() + " matches.");
 							res.setPolicyId(policy.getId());
 							res.setRuleId(rule.getId());
+							// Check if result already exist then update it.
+							res = resRepo.saveOrUpdate(res);
 							results.add(res);
 						}
 					}
