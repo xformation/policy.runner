@@ -58,6 +58,9 @@ public class PolicyExecutor {
 		if (IUtils.isNull(rules)) {
 			rules = PolicyApplication.getBean(RuleRepository.class);
 		}
+		if (IUtils.isNull(resRepo)) {
+			resRepo = PolicyApplication.getBean(ResultRepository.class);
+		}
 	}
 
 	/**
