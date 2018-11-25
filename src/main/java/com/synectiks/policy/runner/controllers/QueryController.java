@@ -133,7 +133,7 @@ public class QueryController {
 		logger.info("Policy to execute: " + policyId);
 		if (!IUtils.isNullOrEmpty(policyId)) {
 			try {
-				Policy policy = policies.findById(policyId);
+				Policy policy = policies.findById(policyId).orElse(null);
 				PolicyExecutor executor = new PolicyExecutor(policy);
 				json = executor.execute();
 			} catch (Throwable th) {

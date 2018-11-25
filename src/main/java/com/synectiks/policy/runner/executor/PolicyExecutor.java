@@ -79,7 +79,7 @@ public class PolicyExecutor {
 				for (String ruleid : policy.getRules()) {
 					logger.info("rule id: " + ruleid);
 					// Reload rule by id
-					Rule rule = rules.findById(ruleid);
+					Rule rule = rules.findById(ruleid).orElse(null);
 					if (!IUtils.isNull(rule)) {
 						List<JSONObject> checks = processRule(rule);
 						for (JSONObject check : checks) {
@@ -143,7 +143,7 @@ public class PolicyExecutor {
 			for (String ruleid : policy.getRules()) {
 				logger.info("rule id: " + ruleid);
 				// Reload rule by id
-				Rule rule = rules.findById(ruleid);
+				Rule rule = rules.findById(ruleid).orElse(null);
 				List<JSONObject> checks = processRule(rule);
 				for (JSONObject check : checks) {
 					arr.put(check);

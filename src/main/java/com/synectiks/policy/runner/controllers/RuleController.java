@@ -53,7 +53,7 @@ public class RuleController implements IApiController {
 	public ResponseEntity<Object> findById(String id) {
 		Rule entity = null;
 		try {
-			entity = repository.findById(id);
+			entity = repository.findById(id).orElse(null);
 		} catch (Throwable th) {
 			logger.error(th.getMessage(), th);
 			return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
