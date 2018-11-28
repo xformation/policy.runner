@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.origin.OriginTrackedValue;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.event.EventListener;
@@ -50,8 +51,8 @@ public class PolicyApplication {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void setIndexAndMapping() {
-		populateEnvPropertiesInSystem();
 		String searchUrl = IUtilities.getSearchUrl(env, IConstants.SET_INDX_MAPPING_URI);
+		populateEnvPropertiesInSystem();
 		logger.info("searchUrl: " + searchUrl);
 		Map<String, Object> params = IUtils.getRestParamMap(IConsts.PRM_CLASS,
 				SourceEntity.class.getName(), IConsts.PRM_MAPPINGS,
@@ -72,12 +73,16 @@ public class PolicyApplication {
 	private void populateEnvPropertiesInSystem() {
 		AbstractEnvironment absEnv = (AbstractEnvironment) env;
 		absEnv.getPropertySources().forEach(pSrc -> {
+			//logger.info("Source----->: " + pSrc.getName()
+			//		+ "\n\tcls: " + pSrc.getSource().getClass().getName());
 			if (pSrc instanceof MapPropertySource) {
 				Map<String, Object> propMap = ((MapPropertySource) pSrc).getSource();
 				for (String key : propMap.keySet()) {
 					Object val = propMap.get(key);
+					//logger.info("Val class: "
+					//		+ (val != null ? val.getClass().getName() : "null"));
 					if (!IUtils.isNull(val) && (val instanceof String ||
-							val instanceof Number)) {
+							val instanceof Number || val instanceof OriginTrackedValue)) {
 						logger.info("Setting: " + key);
 						System.setProperty(key, String.valueOf(val));
 					}
