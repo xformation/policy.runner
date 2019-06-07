@@ -85,9 +85,13 @@ public class PolicyExecutor {
 						for (JSONObject check : checks) {
 							arr.put(check);
 						}
-						JSONObject query = IUtilities.addKeyValInJson(null,
-								IConstants.QUERY,
-								IUtilities.createBoolQueryFor(Keywords.AND, checks));
+						/*
+						// FIXME: CAUSION commented to test the actual query effect of els 5.5+
+						 * JSONObject query = IUtilities.addKeyValInJson(null,
+						 * IConstants.QUERY,
+						 * IUtilities.createBoolQueryFor(Keywords.AND, checks));
+						 */
+						JSONObject query = IUtilities.createBoolQueryFor(Keywords.AND, checks);
 						PolicyRuleResult res = executeQuery(query, 1);
 						if (!IUtils.isNull(res) && res.getTotalHits() > 0) {
 							logger.info("Found " + res.getTotalHits() + " matches.");

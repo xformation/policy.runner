@@ -37,9 +37,10 @@ public class RuleController implements IApiController {
 	@Override
 	@RequestMapping(path = IConsts.API_FIND_ALL, method = RequestMethod.GET)
 	public ResponseEntity<Object> findAll(HttpServletRequest request) {
-		List<Rule> entities = null;
+		Object entities = null;
 		try {
-			entities = (List<Rule>) repository.findAll();
+			List<Rule> list = (List<Rule>) repository.findAll();
+			entities = this.getSurveyEntityResult(request, list);
 		} catch (Throwable th) {
 			logger.error(th.getMessage(), th);
 			return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)

@@ -43,9 +43,10 @@ public class PolicyController implements IApiController {
 	@Override
 	@RequestMapping(path = IConsts.API_FIND_ALL, method = RequestMethod.GET)
 	public ResponseEntity<Object> findAll(HttpServletRequest request) {
-		List<Policy> entities = null;
+		Object entities = null;
 		try {
-			entities = (List<Policy>) repository.findAll();
+			List<Policy> list = (List<Policy>) repository.findAll();
+			entities = this.getSurveyEntityResult(request, list);
 		} catch (Throwable th) {
 			logger.error(th.getMessage(), th);
 			return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)

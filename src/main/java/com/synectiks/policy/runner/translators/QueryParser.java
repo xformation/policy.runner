@@ -34,7 +34,10 @@ public class QueryParser implements IConstants {
 	 * @return
 	 */
 	public JSONObject parse() {
+		return processQuery(query);
+		/*
 		JSONObject json = processQuery(query);
+		// ELS 5.5+
 		if (!IUtils.isNull(json)) {
 			try {
 				return new JSONObject().put(IConstants.QUERY, json);
@@ -42,7 +45,7 @@ public class QueryParser implements IConstants {
 				// ignore it.
 			}
 		}
-		return null;
+		return null;*/
 	}
 
 	/**
