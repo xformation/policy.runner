@@ -45,6 +45,7 @@ public class PolicyExecutor {
 	private ResultRepository resRepo;
 
 	private Policy policy;
+	private boolean noCache = false;
 
 	public PolicyExecutor(Policy policy) {
 		assertNotNull("Policy should not be null", policy);
@@ -63,6 +64,10 @@ public class PolicyExecutor {
 		}
 	}
 
+	public void setNoCache(boolean cache) {
+		this.noCache = cache;
+	}
+
 	/**
 	 * Method to execute policy to collect and store results.
 	 * @return
@@ -78,28 +83,29 @@ public class PolicyExecutor {
 				JSONArray arr = new JSONArray();
 				for (String ruleid : policy.getRules()) {
 					logger.info("rule id: " + ruleid);
-					// Reload rule by id
-					Rule rule = rules.findById(ruleid).orElse(null);
-					if (!IUtils.isNull(rule)) {
-						List<JSONObject> checks = processRule(rule);
-						for (JSONObject check : checks) {
-							arr.put(check);
-						}
-						/*
-						// FIXME: CAUSION commented to test the actual query effect of els 5.5+
-						 * JSONObject query = IUtilities.addKeyValInJson(null,
-						 * IConstants.QUERY,
-						 * IUtilities.createBoolQueryFor(Keywords.AND, checks));
-						 */
-						JSONObject query = IUtilities.createBoolQueryFor(Keywords.AND, checks);
-						PolicyRuleResult res = executeQuery(query, 1);
-						if (!IUtils.isNull(res) && res.getTotalHits() > 0) {
-							logger.info("Found " + res.getTotalHits() + " matches.");
-							res.setPolicyId(policy.getId());
-							res.setRuleId(rule.getId());
-							// Check if result already exist then update it.
-							res = resRepo.saveOrUpdate(res);
-							results.add(res);
+					PolicyRuleResult prRes = resRepo.findByPolicyAndRuleId(policy.getId(), ruleid);
+					if (!IUtils.isNull(prRes)) {
+						results.add(prRes);
+					} else {
+						// Reload rule by id
+						Rule rule = rules.findById(ruleid).orElse(null);
+						if (!IUtils.isNull(rule)) {
+							List<JSONObject> checks = processRule(rule);
+							for (JSONObject check : checks) {
+								arr.put(check);
+							}
+							JSONObject query = IUtilities.createBoolQueryFor(Keywords.AND, checks);
+							PolicyRuleResult res = executeQuery(query, 1);
+							if (!IUtils.isNull(res) && res.getTotalHits() > 0) {
+								logger.info("Found " + res.getTotalHits() + " matches.");
+								res.setPolicyId(policy.getId());
+								res.setRuleId(rule.getId());
+								if (!noCache) {
+									// Check if result already exist then update it.
+									res = resRepo.saveOrUpdate(res);
+								}
+								results.add(res);
+							}
 						}
 					}
 				}
@@ -121,6 +127,7 @@ public class PolicyExecutor {
 				IConsts.PRM_QUERY, query.toString(),
 				IConsts.PRM_CLASS, SourceEntity.class.getName(),
 				IConsts.PRM_PAGE, String.valueOf(page),
+				IConsts.PRM_RES_AS_PSR, Boolean.toString(this.noCache),
 				IConsts.PRM_PAGE_SIZE, String.valueOf(PG_SIZE));
 		logger.info("Request: " + params);
 		PolicyRuleResult res = null;

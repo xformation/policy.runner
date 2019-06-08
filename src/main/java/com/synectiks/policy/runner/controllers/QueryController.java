@@ -19,10 +19,12 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.synectiks.commons.constants.IConsts;
 import com.synectiks.commons.entities.Policy;
 import com.synectiks.commons.entities.PolicyRuleResult;
 import com.synectiks.commons.utils.IUtils;
@@ -128,13 +130,16 @@ public class QueryController {
 	 * @return
 	 */
 	@RequestMapping(path = IConstants.API_EXECUTE, method = RequestMethod.POST)
-	public ResponseEntity<Object> execute(String policyId) {
+	public ResponseEntity<Object> execute(String policyId,
+			@RequestParam(name = "noCache",
+					required = false) boolean noCache) {
 		List<PolicyRuleResult> json = null;
 		logger.info("Policy to execute: " + policyId);
 		if (!IUtils.isNullOrEmpty(policyId)) {
 			try {
 				Policy policy = policies.findById(policyId).orElse(null);
 				PolicyExecutor executor = new PolicyExecutor(policy);
+				executor.setNoCache(noCache);
 				json = executor.execute();
 			} catch (Throwable th) {
 				logger.error(th.getMessage(), th);
