@@ -23,7 +23,7 @@ public class WebController {
 	 * @param model
 	 * @return
 	 */
-	@RequestMapping(path = "/", method = RequestMethod.GET)
+	@RequestMapping(path = "/index", method = RequestMethod.GET)
 	public String index(ModelMap model) {
 		return "index";
 	}
