@@ -13,6 +13,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -22,11 +23,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.synectiks.commons.constants.IConsts;
 import com.synectiks.commons.entities.Policy;
 import com.synectiks.commons.entities.PolicyRuleResult;
+import com.synectiks.commons.entities.SourceEntity;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.executor.PolicyExecutor;
 import com.synectiks.policy.runner.repositories.PolicyRepository;
@@ -45,6 +48,11 @@ public class QueryController {
 
 	@Autowired
 	private PolicyRepository policies;
+
+	@Autowired
+	private Environment env;
+	@Autowired
+	private RestTemplate rest;
 
 	/**
 	 * API to translate the input query string into elastic DSL query.
@@ -101,23 +109,39 @@ public class QueryController {
 	 * @param query
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	@RequestMapping(path = IConstants.API_SUGGEST, method = RequestMethod.POST)
-	public ResponseEntity<Object> keySuggestion(String query) {
+	public ResponseEntity<Object> keySuggestion(String query,
+			@RequestParam(name = IConsts.PRM_CLASS, required= false) String cls) {
 		List<String> suggestions = new ArrayList<>();
 		if (!IUtils.isNullOrEmpty(query)) {
-			try {
-				if (!IUtilities.srcEntityFields.isEmpty()) {
-					for (String key : IUtilities.srcEntityFields) {
+			if (!IUtils.isNullOrEmpty(cls)) {
+				List<String> lst = null;
+				if (IUtilities.entityFields.containsKey(cls)) {
+					lst = IUtilities.entityFields.get(cls);
+				} else {
+					lst = (List<String>) IUtilities.fillIndexedKeys(rest, env, cls);
+					IUtilities.entityFields.put(cls, lst);
+				}
+				for (String key : lst) {
+					if (key.toLowerCase().contains(query.trim().toLowerCase())) {
+						suggestions.add(key);
+					}
+				}
+			} else {
+				String srcEnt = SourceEntity.class.getName();
+				if (!IUtilities.entityFields.isEmpty() &&
+						IUtilities.entityFields.containsKey(srcEnt)) {
+					for (String key : IUtilities.entityFields.get(srcEnt)) {
 						if (!IUtils.isNullOrEmpty(key) &&
 								key.toLowerCase().contains(query.toLowerCase())) {
 							suggestions.add(key);
 						}
 					}
+				} else {
+					return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
+							.body(IUtils.getFailedResponse("Failed to load initial kyes"));
 				}
-			} catch (Throwable th) {
-				logger.error(th.getMessage(), th);
-				return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
-						.body(IUtils.getFailedResponse(th.getMessage()));
 			}
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(suggestions);

@@ -2,7 +2,7 @@ package com.synectiks.policy.runner.utils;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +26,7 @@ import com.synectiks.policy.runner.utils.IConstants.Keywords;
  */
 public interface IUtilities {
 
-	List<String> srcEntityFields = new ArrayList<>();
+	Map<String, List<String>> entityFields = new HashMap<>();
 
 	/**
 	 * Method to extract first non space char sequence form input.
@@ -845,29 +845,41 @@ public interface IUtilities {
 	 * Method to load SourceEntities Mappings fields if exists.
 	 * @param rest
 	 * @param searchHost
+	 * @param clsName
 	 */
-	static void fillIndexedKeys(RestTemplate rest, Environment env) {
+	static Object fillIndexedKeys(RestTemplate rest, Environment env, String clsName) {
+
 		String searchUrl = getSearchUrl(env, IConstants.GET_INDX_MAPPING_URI);
 		IUtils.logger.info("searchUrl: " + searchUrl);
 		Map<String, Object> params = IUtils.getRestParamMap(IConsts.PRM_CLASS,
-				SourceEntity.class.getName(), IConsts.PRM_FLD_ONLY, String.valueOf(true));
+				clsName, IConsts.PRM_FLD_ONLY, String.valueOf(true));
 		IUtils.logger.info("Request: " + params);
 		try {
 			Object res = IUtils.sendPostRestRequest(rest,
 					searchUrl, null, List.class,
 					params, MediaType.APPLICATION_FORM_URLENCODED);
 			IUtils.logger.info("Mappings response: " + res);
-			if (!IUtils.isNull(res) && res instanceof List) {
-				@SuppressWarnings("unchecked")
-				List<String> lst = (List<String>) res;
-				for (String key : lst) {
-					if (!srcEntityFields.contains(key)) {
-						srcEntityFields.add(key);
-					}
-				}
-			}
+			return res;
 		} catch (Exception ex) {
 			IUtils.logger.error(ex.getMessage(), ex);
+		}
+		return null;
+	}
+
+	/**
+	 * Method to load SourceEntities Mappings fields if exists.
+	 * @param rest
+	 * @param searchHost
+	 */
+	static void fillIndexedKeys(RestTemplate rest, Environment env) {
+		String srcEnt = SourceEntity.class.getName();
+		Object res = fillIndexedKeys(rest, env, srcEnt);
+		if (!IUtils.isNull(res) && res instanceof List) {
+			@SuppressWarnings("unchecked")
+			List<String> lst = (List<String>) res;
+			if (!entityFields.containsKey(srcEnt)) {
+				entityFields.put(srcEnt, lst);
+			}
 		}
 	}
 
