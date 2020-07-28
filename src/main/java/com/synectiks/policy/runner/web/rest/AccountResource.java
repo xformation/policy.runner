@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 public class AccountResource {
 
     private static class AccountResourceException extends RuntimeException {
+
+		private static final long serialVersionUID = 8955241996930601793L;
     }
 
     /**
@@ -39,21 +41,24 @@ public class AccountResource {
         private String login;
         private Set<String> authorities;
 
-        @JsonCreator
+		@JsonCreator
         UserVM(String login, Set<String> authorities) {
             this.login = login;
             this.authorities = authorities;
         }
 
-        public boolean isActivated() {
+        @SuppressWarnings("unused")
+		public boolean isActivated() {
             return true;
         }
 
-        public Set<String> getAuthorities() {
+        @SuppressWarnings("unused")
+		public Set<String> getAuthorities() {
             return authorities;
         }
 
-        public String getLogin() {
+        @SuppressWarnings("unused")
+		public String getLogin() {
             return login;
         }
     }

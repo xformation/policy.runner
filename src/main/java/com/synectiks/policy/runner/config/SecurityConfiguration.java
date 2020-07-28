@@ -1,9 +1,5 @@
 package com.synectiks.policy.runner.config;
 
-import com.synectiks.policy.runner.security.*;
-import com.synectiks.policy.runner.security.jwt.*;
-
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -16,6 +12,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
+
+import com.synectiks.policy.runner.security.AuthoritiesConstants;
+import com.synectiks.policy.runner.security.jwt.JWTConfigurer;
+import com.synectiks.policy.runner.security.jwt.TokenProvider;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)

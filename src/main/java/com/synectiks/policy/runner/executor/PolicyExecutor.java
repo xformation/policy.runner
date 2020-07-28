@@ -79,39 +79,96 @@ public class PolicyExecutor {
 			//JSONObject query = createPolicyQuery();
 			if (!IUtils.isNull(policy) && !IUtils.isNull(policy.getRules()) &&
 					policy.getRules().size() > 0) {
-				results = new ArrayList<>();
-				JSONArray arr = new JSONArray();
-				for (String ruleid : policy.getRules()) {
-					logger.info("rule id: " + ruleid);
-					PolicyRuleResult prRes = resRepo.findByPolicyAndRuleId(policy.getId(), ruleid);
-					if (!IUtils.isNull(prRes)) {
-						results.add(prRes);
-					} else {
-						// Reload rule by id
-						Rule rule = rules.findById(ruleid).orElse(null);
-						if (!IUtils.isNull(rule)) {
-							List<JSONObject> checks = processRule(rule);
-							for (JSONObject check : checks) {
-								arr.put(check);
-							}
-							JSONObject query = IUtilities.createBoolQueryFor(Keywords.AND, checks);
-							PolicyRuleResult res = executeQuery(query, 1);
-							if (!IUtils.isNull(res) && res.getTotalHits() > 0) {
-								logger.info("Found " + res.getTotalHits() + " matches.");
-								res.setPolicyId(policy.getId());
-								res.setRuleId(rule.getId());
-								if (!noCache) {
-									// Check if result already exist then update it.
-									res = resRepo.saveOrUpdate(res);
-								}
-								results.add(res);
-							}
+				if (policy.isSearchable()) {
+					results = new ArrayList<>();
+					for (String ruleid : policy.getRules()) {
+						logger.info("rule id: " + ruleid);
+						PolicyRuleResult prRes = resRepo.findByPolicyAndRuleId(policy.getId(), ruleid);
+						if (!IUtils.isNull(prRes)) {
+							results.add(prRes);
+						} else {
+							processSearableRules(ruleid, results);
 						}
 					}
+				} else {
+					 PolicyRuleResult res = listDocs(policy.getEntity());
+					 if (!IUtils.isNull(res) && res.getTotalHits() > 0) {
+						 List<Rule> rules = getEvalRules(policy.getRules());
+						 res.getHits();
+					 }
 				}
 			}
 		}
 		return results;
+	}
+
+	/**
+	 * Fetch all evaluation rules from db.
+	 * @param ruleIds
+	 * @return
+	 */
+	private List<Rule> getEvalRules(List<String> ruleIds) {
+		List<Rule> lstRules = new ArrayList<>();
+		for (String ruleid : ruleIds) {
+			Rule rule = rules.findById(ruleid).orElse(null);
+			if (!IUtils.isNull(rule) && !rule.isSearchable()) {
+				lstRules.add(rule);
+			}
+		}
+		return lstRules;
+	}
+
+	/**
+	 * Execute searchable rules to extract results.
+	 * @param ruleid
+	 * @param results
+	 */
+	private void processSearableRules(String ruleid, List<PolicyRuleResult> results) {
+		// Reload rule by id
+		Rule rule = rules.findById(ruleid).orElse(null);
+		if (!IUtils.isNull(rule) && rule.isSearchable()) {
+			List<JSONObject> checks = processRule(rule);
+			JSONObject query = IUtilities.createBoolQueryFor(Keywords.AND, checks);
+			PolicyRuleResult res = executeQuery(query, 1);
+			if (!IUtils.isNull(res) && res.getTotalHits() > 0) {
+				logger.info("Found " + res.getTotalHits() + " matches.");
+				res.setPolicyId(policy.getId());
+				res.setRuleId(rule.getId());
+				if (!noCache) {
+					// Check if result already exist then update it.
+					res = resRepo.saveOrUpdate(res);
+				}
+				results.add(res);
+			}
+		}
+	}
+
+	/**
+	 * Method to call search service to execute elastic query.
+	 * @param query
+	 * @param page
+	 * @return
+	 */
+	private PolicyRuleResult listDocs(String cls) {
+		String srchUlr = IUtilities.getSearchUrl(env, IConstants.ELASTIC_LIST);
+		logger.info("searchUrl: " + srchUlr);
+		Map<String, Object> params = IUtils.getRestParamMap(
+				IConsts.PRM_CLASS, cls
+					/*
+					 * , IConsts.PRM_PAGE, String.valueOf(page),
+					 * IConsts.PRM_PAGE_SIZE, String.valueOf(PG_SIZE)
+					 */);
+		logger.info("Request: " + params);
+		PolicyRuleResult res = null;
+		try {
+			res = IUtils.sendPostRestRequest(rest,
+					srchUlr, null, PolicyRuleResult.class,
+					params, MediaType.APPLICATION_FORM_URLENCODED);
+			logger.info("Indexing response: " + res);
+		} catch (Exception ex) {
+			logger.error(ex.getMessage(), ex);
+		}
+		return res;
 	}
 
 	/**

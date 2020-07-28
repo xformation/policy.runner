@@ -551,7 +551,7 @@ public interface IUtilities {
 	 * @param grpOp
 	 * @return
 	 */
-	static boolean isInQquery(Keywords op, Keywords grpOp) {
+	static boolean isInQuery(Keywords op, Keywords grpOp) {
 		if ((op == Keywords.EQ || op == Keywords.NE) &&
 				grpOp == Keywords.SmlBrkt) {
 			return true;

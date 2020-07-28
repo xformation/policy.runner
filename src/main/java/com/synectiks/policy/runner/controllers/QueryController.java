@@ -5,6 +5,7 @@ package com.synectiks.policy.runner.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,6 +36,8 @@ import com.synectiks.policy.runner.executor.PolicyExecutor;
 import com.synectiks.policy.runner.repositories.PolicyRepository;
 import com.synectiks.policy.runner.translators.QueryParser;
 import com.synectiks.policy.runner.utils.IConstants;
+import com.synectiks.policy.runner.utils.IConstants.KWTypes;
+import com.synectiks.policy.runner.utils.IConstants.Keywords;
 import com.synectiks.policy.runner.utils.IUtilities;
 
 /**
@@ -83,6 +86,18 @@ public class QueryController {
 			throw ex;
 		}
 		return json;
+	}
+
+	/**
+	 * API to return mappings for entity class.
+	 * @param cls
+	 * @param fieldsOnly if true then you will get list of fieldnames
+	 * @return
+	 */
+	@RequestMapping(path = IConstants.API_OPRTORS_BY_TYPE, method = RequestMethod.GET)
+	public ResponseEntity<Object> getFieldsMap() {
+		Map<KWTypes, List<Keywords>> map = IConstants.Keywords.listFieldsMap();
+		return new ResponseEntity<>(map, HttpStatus.OK);
 	}
 
 	/**
@@ -151,6 +166,7 @@ public class QueryController {
 	 * Api to execute a policy by its id and generate response
 	 * with matching elastic document ids list.
 	 * @param query
+	 * @param noCache send true if no need to save results
 	 * @return
 	 */
 	@RequestMapping(path = IConstants.API_EXECUTE, method = RequestMethod.POST)
@@ -172,6 +188,5 @@ public class QueryController {
 			}
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(json);
-		
 	}
 }
