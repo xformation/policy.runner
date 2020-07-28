@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import com.synectiks.commons.constants.IConsts;
 import com.synectiks.commons.utils.IUtils;
-import com.synectiks.policy.runner.utils.EvalCheck;
 import com.synectiks.policy.runner.utils.IConstants;
 import com.synectiks.policy.runner.utils.IUtilities;
 
@@ -25,15 +24,9 @@ public class QueryParser implements IConstants {
 	private static Logger logger = LoggerFactory.getLogger(QueryParser.class);
 
 	private String query = null;
-	private boolean translate = true;
 
 	public QueryParser(String qry) {
 		query = IUtils.refineQueryString(qry);
-	}
-
-	public QueryParser(String qry, boolean translate) {
-		query = IUtils.refineQueryString(qry);
-		this.translate = translate;
 	}
 
 	/**
@@ -116,38 +109,19 @@ public class QueryParser implements IConstants {
 				} else {
 					qry = IUtilities.removeProcessedString(qry, func.getKey());
 				}
-				if (translate) {
-					exprs = processFunctionQuery(conjType, tkey, func, groupValue);
-				} else {
-					// remove start and end small brakets.
-					groupValue = IUtilities.getGroupValue(
-							groupValue, Keywords.SmlBrkt, false);
-					exprs = IUtils.getJSONObject(
-							EvalCheck.create(tkey, func, groupValue).toString());
-				}
+				exprs = processFunctionQuery(conjType, tkey, func, groupValue);
 			} else {
 				logger.info("Value: ");
 				// We have got direct value so make match all query
-				if (translate) {
-					exprs = IUtilities.createQuery(MATCH, _All, qry);
-				} else {
-					exprs = IUtils.getJSONObject(
-							EvalCheck.create("*", Keywords.EQ, qry).toString());
-				}
+				exprs = IUtilities.createQuery(MATCH, _All, qry);
 				// we have processed whole qry text so set it empty.
 				qry = IConsts.EMPTY;
 			}
-			if (translate) {
-				result = IUtils.deepMerge(exprs, result);
-			} else {
-				result = exprs;
-			}
+			result = IUtils.deepMerge(exprs, result);
 		}
-		if (translate) {
-			// Make it must query if there is no conjunction type exists.
-			if (IUtils.isNull(conjType) && !result.has(IConstants.BOOL)) {
-				result = IUtilities.createBoolQueryFor(Keywords.AND, result);
-			}
+		// Make it must query if there is no conjunction type exists.
+		if (IUtils.isNull(conjType) && !result.has(IConstants.BOOL)) {
+			result = IUtilities.createBoolQueryFor(Keywords.AND, result);
 		}
 		logger.info("End processing with result: " + result);
 		return result;
@@ -265,7 +239,7 @@ public class QueryParser implements IConstants {
 			if (IUtilities.isStartWithGroup(value)) {
 				Keywords grpOp = IUtilities.getStartWithGroup(value);
 				value = IUtilities.getGroupValue(value, grpOp, false);
-				isGrp = IUtilities.isInQuery(operator, grpOp);
+				isGrp = IUtilities.isInQquery(operator, grpOp);
 			}
 			// get function if value has any
 			Keywords func = IUtilities.getFunction(value, false);
