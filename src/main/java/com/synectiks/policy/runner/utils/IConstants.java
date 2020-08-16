@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.synectiks.commons.utils.IUtils;
+import com.synectiks.policy.runner.utils.OperatorsDesc.Operator;
 
 /**
  * @author Rajesh
@@ -61,24 +62,24 @@ public interface IConstants {
 				+ "i.e. key = value AND key = value"),
 		// Functions
 		ISEMPTY("isEmpty", KWTypes.FUNCTION,
-				"Check or select rows if the key's value is empty i.e. <i>key isEmpty</i>",
+				"Check or select rows if the key&#39;s value is empty i.e. <i>key isEmpty</i>",
 				DataTypes.TEXT, DataTypes.DATE, DataTypes.ARRAY),
 		ISNOTEMPTY("isNotEmpty", KWTypes.FUNCTION,
-				"Check or select rows if the key's value is NOT empty i.e. <i>key isNotEmpty</i>",
+				"Check or select rows if the key&#39;s value is NOT empty i.e. <i>key isNotEmpty</i>",
 				DataTypes.TEXT, DataTypes.DATE, DataTypes.ARRAY),
 		ISNOTNULL("isNotNull", KWTypes.FUNCTION,
-				"Check or select rows if the key's value is NOT null i.e. <i>key isNotNull</i>",
+				"Check or select rows if the key&#39;s value is NOT null i.e. <i>key isNotNull</i>",
 				DataTypes.TEXT, DataTypes.DATE, DataTypes.ARRAY),
 		ISNULL("isNull", KWTypes.FUNCTION,
-				"Check or select rows if the key's value is null i.e. <i>key isNull</i>",
+				"Check or select rows if the key&#39;s value is null i.e. <i>key isNull</i>",
 				DataTypes.TEXT, DataTypes.DATE, DataTypes.ARRAY),
 		REGEX("regex", KWTypes.FUNCTION,
-				"Check or select rows if key's value match with regex"
-				+ " i.e. <i>.key regex('^R.*esh$')</i>",
+				"Check or select rows if key&#39;s value match with regex"
+				+ " i.e. <i>.key regex(&#39;^R.*esh$&#39;)</i>",
 				DataTypes.TEXT),
 		TODATE("toDate", KWTypes.FUNCTION,
-				"This function help to convert string value to date for matching key's value."
-				+ " i.e. <i>key >= toDate('2018-08-15 13:20:30', 'yyyy-MM-dd HH:mm:ss')</i>",
+				"This function help to convert string value to date for matching key&#39;s value."
+				+ " i.e. <i>key >= toDate(&#39;2018-08-15 13:20:30&#39;, &#39;yyyy-MM-dd HH:mm:ss&#39;)</i>",
 				DataTypes.DATE),
 		// Group
 		CptlBrkt("[]", KWTypes.GROUP,
@@ -92,8 +93,8 @@ public interface IConstants {
 				+ " i.e. <i>key = (value1, value2, value3)</i>"),
 		DblQuote("\"", KWTypes.GROUP,
 				"The \" we use to combine a text with spaces. i.e. <i>key = \"sample value\"</i>"),
-		SnglQuote("'", KWTypes.GROUP,
-				"Another form of combining text with spaces. i.e. <i>key = 'sample value'</i>"),
+		SnglQuote("&#39;", KWTypes.GROUP,
+				"Another form of combining text with spaces. i.e. <i>key = &#39;sample value&#39;</i>"),
 		// Keyword
 		HAS("has", KWTypes.KEYWORD,
 				"This keyword is used to identify if a row has value for key."
@@ -132,10 +133,10 @@ public interface IConstants {
 				"NOT IN operator not to match multiple values in a key(s). "
 				+ "i.e. <i>key != (value1, value2, value3)</i>",
 				DataTypes.INT, DataTypes.LONG, DataTypes.DOUBLE, DataTypes.DATE, DataTypes.TEXT),
-		LIKE("= 'x?y*z'", KWTypes.OPERATOR,
+		LIKE("= &#39;x?y*z&#39;", KWTypes.OPERATOR,
 				"This is sort of wildcard query where we can use ? and * to match values.",
 				DataTypes.TEXT),
-		NotLike("!= 'x?y*z'", KWTypes.OPERATOR,
+		NotLike("!= &#39;x?y*z&#39;", KWTypes.OPERATOR,
 				"This is wildcard query where we can use ? and * to NOT match values.",
 				DataTypes.TEXT),
 		// Wildcards
@@ -158,6 +159,22 @@ public interface IConstants {
 			this.type = type;
 			this.hint = hint;
 			this.supportedTypes = supports;
+		}
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("{");
+			sb.append("key: \"" + key + "\"");
+			sb.append(", type: \"" + type + "\"");
+			if (!IUtils.isNullOrEmpty(hint)) {
+				sb.append(", hint: \"" + hint + "\"");
+			}
+			if (!IUtils.isNull(supportedTypes) && supportedTypes.length > 0) {
+				sb.append(", supportedTypes: " + IUtilities.arrToString(supportedTypes));
+			}
+			sb.append("}");
+			return sb.toString();
 		}
 
 		public String getName() {
@@ -241,7 +258,7 @@ public interface IConstants {
 		 * @param type
 		 * @return
 		 */
-		public static List<Keywords> list(KWTypes type) {
+		public static List<Keywords> listKeywords(KWTypes type) {
 			List<Keywords> lst = new ArrayList<>();
 			for (Keywords kw : Keywords.values()) {
 				if (kw.type == type) {
@@ -252,18 +269,33 @@ public interface IConstants {
 		}
 
 		/**
+		 * Method to list all the keywords of specified type.
+		 * @param type
+		 * @return
+		 */
+		public static List<Operator> list(KWTypes type) {
+			List<Operator> lst = new ArrayList<>();
+			for (Keywords kw : Keywords.values()) {
+				if (kw.type == type) {
+					lst.add(Operator.create(kw));
+				}
+			}
+			return lst;
+		}
+
+		/**
 		 * Method to list all Keywords and functions group by types.
 		 * @return
 		 */
-		public static Map<KWTypes, List<Keywords>> listFieldsMap () {
-			Map<KWTypes, List<Keywords>> map = new HashMap<>();
+		public static OperatorsDesc listFieldsMap () {
+			OperatorsDesc opDesc = new OperatorsDesc();
 			for (KWTypes type : KWTypes.values()) {
 				if (KWTypes.WILDCARD != type) {
-					map.put(type, list(type));
+					opDesc.putInMap(type.name(), list(type));
 				}
 			}
-			logger.info("Map: " + map);
-			return map;
+			logger.info("Map: " + opDesc.getMap());
+			return opDesc;
 		}
 
 	};

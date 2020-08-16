@@ -175,7 +175,7 @@ synectiks:
 ## DynamoDB connection url
 amazon:
   dynamodb:
-    endpoint: http://localhost:8000/
+    endpoint: http://100.81.5.25:8000/
 ##amazon.dynamodb.endpoint = http://${AWS_ENDPOINT}/
 #
 ## Set customer id or name to make unique tables for customer.

@@ -111,6 +111,25 @@ public interface IUtilities {
 	}
 
 	/**
+	 * get String from array
+	 * @param objs
+	 * @return
+	 */
+	static String arrToString(Object[] objs) {
+		StringBuilder sb = new StringBuilder();
+		if (!IUtils.isNull(objs) && objs.length > 0) {
+			sb.append("[");
+			for (Object o : objs) {
+				sb.append(sb.length() > 1 ? ", " : "");
+				sb.append(o.toString());
+			}
+			sb.append("]");
+			return sb.toString();
+		}
+		return null;
+	}
+
+	/**
 	 * Method to create a json object i.e.
 	 * <pre>
 	 * {
@@ -611,7 +630,7 @@ public interface IUtilities {
 	 */
 	static Keywords getStartWithGroup(String qry) {
 		if (!IUtils.isNullOrEmpty(qry)) {
-			List<Keywords> list = Keywords.list(KWTypes.GROUP);
+			List<Keywords> list = Keywords.listKeywords(KWTypes.GROUP);
 			for (Keywords kw : list) {
 				if (qry.startsWith(kw.getGroupStart())) {
 					return kw;
@@ -651,7 +670,7 @@ public interface IUtilities {
 	 */
 	static boolean endWithConjOp(String val) {
 		if (!IUtils.isNullOrEmpty(val)) {
-			List<Keywords> list = Keywords.list(KWTypes.CONJUNCTION);
+			List<Keywords> list = Keywords.listKeywords(KWTypes.CONJUNCTION);
 			for (Keywords kw : list) {
 				if (val.endsWith(kw.getKey())) {
 					return true;
@@ -719,7 +738,7 @@ public interface IUtilities {
 			}
 			Keywords operator = null;
 			if (!IUtils.isNullOrEmpty(qry)) {
-				List<Keywords> list = Keywords.list(KWTypes.OPERATOR);
+				List<Keywords> list = Keywords.listKeywords(KWTypes.OPERATOR);
 				for (Keywords kw : list) {
 					if (qry.startsWith(kw.getKey())) {
 						if (kw.getKey().length() == 1) {
@@ -745,7 +764,7 @@ public interface IUtilities {
 	 */
 	static Keywords getConjuncOperator(String qry) {
 		if (!IUtils.isNullOrEmpty(qry)) {
-			List<Keywords> list = Keywords.list(KWTypes.CONJUNCTION);
+			List<Keywords> list = Keywords.listKeywords(KWTypes.CONJUNCTION);
 			for (Keywords kw : list) {
 				if (qry.startsWith(kw.getKey() + IConsts.SPACE)) {
 					return kw;
@@ -771,7 +790,7 @@ public interface IUtilities {
 	 */
 	static boolean isStartWithHasKeyword(String qry) {
 		if (!IUtils.isNullOrEmpty(qry)) {
-			List<Keywords> list = Keywords.list(KWTypes.KEYWORD);
+			List<Keywords> list = Keywords.listKeywords(KWTypes.KEYWORD);
 			for (Keywords kw : list) {
 				if (kw == Keywords.HAS &&
 						qry.startsWith(kw.getKey() + IConsts.SPACE)) {
@@ -796,7 +815,7 @@ public interface IUtilities {
 				String key = getFirstString(qry);
 				qry = removeProcessedString(qry, key);
 			}
-			List<Keywords> list = Keywords.list(KWTypes.FUNCTION);
+			List<Keywords> list = Keywords.listKeywords(KWTypes.FUNCTION);
 			for (Keywords kw : list) {
 				if (qry.startsWith(kw.getKey())) {
 					return kw;
@@ -831,7 +850,7 @@ public interface IUtilities {
 	 */
 	static boolean hasWildcard(final String value) {
 		if (!IUtils.isNullOrEmpty(value)) {
-			List<Keywords> list = Keywords.list(KWTypes.WILDCARD);
+			List<Keywords> list = Keywords.listKeywords(KWTypes.WILDCARD);
 			for (Keywords kw : list) {
 				if (value.contains(kw.getKey())) {
 					return true;

@@ -39,6 +39,7 @@ import com.synectiks.policy.runner.utils.IConstants;
 import com.synectiks.policy.runner.utils.IConstants.KWTypes;
 import com.synectiks.policy.runner.utils.IConstants.Keywords;
 import com.synectiks.policy.runner.utils.IUtilities;
+import com.synectiks.policy.runner.utils.OperatorsDesc;
 
 /**
  * @author Rajesh
@@ -96,8 +97,8 @@ public class QueryController {
 	 */
 	@RequestMapping(path = IConstants.API_OPRTORS_BY_TYPE, method = RequestMethod.GET)
 	public ResponseEntity<Object> getFieldsMap() {
-		Map<KWTypes, List<Keywords>> map = IConstants.Keywords.listFieldsMap();
-		return new ResponseEntity<>(map, HttpStatus.OK);
+		OperatorsDesc opDesc = IConstants.Keywords.listFieldsMap();
+		return new ResponseEntity<>(opDesc.getMap(), HttpStatus.OK);
 	}
 
 	/**
