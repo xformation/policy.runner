@@ -5,7 +5,6 @@ package com.synectiks.policy.runner.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,8 +35,6 @@ import com.synectiks.policy.runner.executor.PolicyExecutor;
 import com.synectiks.policy.runner.repositories.PolicyRepository;
 import com.synectiks.policy.runner.translators.QueryParser;
 import com.synectiks.policy.runner.utils.IConstants;
-import com.synectiks.policy.runner.utils.IConstants.KWTypes;
-import com.synectiks.policy.runner.utils.IConstants.Keywords;
 import com.synectiks.policy.runner.utils.IUtilities;
 import com.synectiks.policy.runner.utils.OperatorsDesc;
 
@@ -171,12 +168,12 @@ public class QueryController {
 	 * @return
 	 */
 	@RequestMapping(path = IConstants.API_EXECUTE, method = RequestMethod.POST)
-	public ResponseEntity<Object> execute(String policyId,
+	public ResponseEntity<Object> execute(long policyId,
 			@RequestParam(name = "noCache",
 					required = false) boolean noCache) {
 		List<PolicyRuleResult> json = null;
 		logger.info("Policy to execute: " + policyId);
-		if (!IUtils.isNullOrEmpty(policyId)) {
+		if (policyId > 0) {
 			try {
 				Policy policy = policies.findById(policyId).orElse(null);
 				PolicyExecutor executor = new PolicyExecutor(policy);

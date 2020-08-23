@@ -56,15 +56,9 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.synectiks</groupId>
-			<artifactId>schemas</artifactId>
-			<version>3.0.0-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-lang</groupId>
-					<artifactId>commons-lang</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>

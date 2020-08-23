@@ -81,11 +81,12 @@ public class PolicyExecutor {
 					policy.getRules().size() > 0) {
 				results = new ArrayList<>();
 				JSONArray arr = new JSONArray();
-				for (String ruleid : policy.getRules()) {
+				for (long ruleid : policy.getRules()) {
 					logger.info("rule id: " + ruleid);
-					PolicyRuleResult prRes = resRepo.findByPolicyAndRuleId(policy.getId(), ruleid);
+					List<PolicyRuleResult> prRes = resRepo.findByPolicyIdAndRuleId(
+							policy.getId(), ruleid);
 					if (!IUtils.isNull(prRes)) {
-						results.add(prRes);
+						results.addAll(prRes);
 					} else {
 						// Reload rule by id
 						Rule rule = rules.findById(ruleid).orElse(null);
@@ -102,7 +103,7 @@ public class PolicyExecutor {
 								res.setRuleId(rule.getId());
 								if (!noCache) {
 									// Check if result already exist then update it.
-									res = resRepo.saveOrUpdate(res);
+									res = resRepo.save(res);
 								}
 								results.add(res);
 							}
@@ -151,7 +152,7 @@ public class PolicyExecutor {
 		if (!IUtils.isNull(policy) && !IUtils.isNull(policy.getRules()) &&
 				policy.getRules().size() > 0) {
 			JSONArray arr = new JSONArray();
-			for (String ruleid : policy.getRules()) {
+			for (long ruleid : policy.getRules()) {
 				logger.info("rule id: " + ruleid);
 				// Reload rule by id
 				Rule rule = rules.findById(ruleid).orElse(null);

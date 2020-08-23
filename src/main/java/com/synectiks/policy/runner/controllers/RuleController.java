@@ -26,7 +26,7 @@ import com.synectiks.policy.runner.repositories.RuleRepository;
 @CrossOrigin
 @RestController
 @RequestMapping(path = IApiController.RULE_API, method = RequestMethod.POST)
-public class RuleController implements IApiController {
+public class RuleController {
 
 	private static final Logger logger = LoggerFactory.getLogger(
 			RuleController.class);
@@ -34,13 +34,13 @@ public class RuleController implements IApiController {
 	@Autowired
 	private RuleRepository repository;
 
-	@Override
 	@RequestMapping(path = IConsts.API_FIND_ALL, method = RequestMethod.GET)
 	public ResponseEntity<Object> findAll(HttpServletRequest request) {
 		Object entities = null;
 		try {
-			List<Rule> list = (List<Rule>) repository.findAll();
-			entities = this.getSurveyEntityResult(request, list);
+			entities = (List<Rule>) repository.findAll();
+			//List<Rule> list = (List<Rule>) repository.findAll();
+			//entities = this.getSurveyEntityResult(request, list);
 		} catch (Throwable th) {
 			logger.error(th.getMessage(), th);
 			return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
@@ -49,9 +49,8 @@ public class RuleController implements IApiController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(entities);
 	}
 
-	@Override
 	@RequestMapping(path = IConsts.API_FIND_ID, method = RequestMethod.GET)
-	public ResponseEntity<Object> findById(String id) {
+	public ResponseEntity<Object> findById(long id) {
 		Rule entity = null;
 		try {
 			entity = repository.findById(id).orElse(null);
@@ -63,11 +62,10 @@ public class RuleController implements IApiController {
 		return ResponseEntity.status(HttpStatus.OK).body(entity);
 	}
 
-	@Override
 	@RequestMapping(path = IConsts.API_DELETE_ID)
-	public ResponseEntity<Object> deleteById(String id) {
+	public ResponseEntity<Object> deleteById(long id) {
 		try {
-			repository.delete(id);
+			repository.deleteById(id);
 		} catch (Throwable th) {
 			logger.error(th.getMessage(), th);
 			return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
@@ -77,7 +75,6 @@ public class RuleController implements IApiController {
 				.body("Rule removed Successfully");
 	}
 
-	@Override
 	@RequestMapping(path = IConsts.API_CREATE)
 	public ResponseEntity<Object> create(@RequestBody ObjectNode entity,
 			HttpServletRequest request) {
@@ -94,18 +91,16 @@ public class RuleController implements IApiController {
 		return ResponseEntity.status(HttpStatus.OK).body(rule);
 	}
 
-	@Override
 	@RequestMapping(path = IConsts.API_UPDATE)
 	public ResponseEntity<Object> update(@RequestBody ObjectNode entity,
 			HttpServletRequest request) {
 		return create(entity, request);
 	}
 
-	@Override
 	@RequestMapping(path = IConsts.API_DELETE)
 	public ResponseEntity<Object> delete(@RequestBody ObjectNode entity) {
 		if (!IUtils.isNull(entity.get(IDBConsts.Col_ID))) {
-			return deleteById(entity.get(IDBConsts.Col_ID).asText());
+			return deleteById(entity.get(IDBConsts.Col_ID).asLong());
 		}
 		return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED)
 				.body(IUtils.getFailedResponse("Not a valid entity"));

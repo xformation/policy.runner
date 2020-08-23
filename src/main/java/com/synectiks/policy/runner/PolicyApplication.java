@@ -154,4 +154,10 @@ public class PolicyApplication implements InitializingBean {
 				contextPath, protocol, hostAddress, serverPort, contextPath,
 				env.getActiveProfiles());
 	}
+
+//	@Bean
+//	@Autowired
+//	public ESEventPublisher getESEventPublisher() {
+//		return new ESEventPublisher();
+//	}
 }
