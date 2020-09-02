@@ -13,6 +13,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.origin.OriginTrackedValue;
@@ -36,6 +37,7 @@ import com.synectiks.policy.runner.utils.IUtilities;
 import io.github.jhipster.config.JHipsterConstants;
 
 @SpringBootApplication
+@EntityScan(basePackages = "com.synectiks")
 @ComponentScan(basePackages = { "com.synectiks" })
 @EnableConfigurationProperties({ApplicationProperties.class})
 public class PolicyApplication implements InitializingBean {
