@@ -88,8 +88,6 @@ public class QueryController {
 
 	/**
 	 * API to return mappings for entity class.
-	 * @param cls
-	 * @param fieldsOnly if true then you will get list of fieldnames
 	 * @return
 	 */
 	@RequestMapping(path = IConstants.API_OPRTORS_BY_TYPE, method = RequestMethod.GET)
@@ -120,6 +118,7 @@ public class QueryController {
 	/**
 	 * Api to provide auto complete suggestions for input string.
 	 * @param query
+	 * @param cls
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
@@ -163,7 +162,7 @@ public class QueryController {
 	/**
 	 * Api to execute a policy by its id and generate response
 	 * with matching elastic document ids list.
-	 * @param query
+	 * @param policyId
 	 * @param noCache send true if no need to save results
 	 * @return
 	 */
