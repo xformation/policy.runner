@@ -18,6 +18,7 @@ import com.synectiks.policy.runner.utils.IConstants;
 import com.synectiks.policy.runner.utils.IUtilities;
 
 /**
+ * Class to parse string query into elastic query.
  * @author Rajesh
  */
 public class QueryParser implements IConstants {

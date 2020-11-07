@@ -46,6 +46,7 @@ public class PolicyExecutor {
 
 	private Policy policy;
 	private boolean noCache = false;
+	private int page = 1;
 
 	public PolicyExecutor(Policy policy) {
 		assertNotNull("Policy should not be null", policy);
@@ -68,6 +69,10 @@ public class PolicyExecutor {
 		this.noCache = cache;
 	}
 
+	public void setPage(int pg) {
+		this.page = pg;
+	}
+
 	/**
 	 * Method to execute policy to collect and store results.
 	 * @return
@@ -77,7 +82,7 @@ public class PolicyExecutor {
 		if (!IUtils.isNull(policy)) {
 			logger.info("Executing policy: " + policy.getName());
 			//JSONObject query = createPolicyQuery();
-			if (!IUtils.isNull(policy) && !IUtils.isNull(policy.getRules()) &&
+			if (policy.isSearchable() && !IUtils.isNull(policy.getRules()) &&
 					policy.getRules().size() > 0) {
 				results = new ArrayList<>();
 				JSONArray arr = new JSONArray();
@@ -96,7 +101,7 @@ public class PolicyExecutor {
 								arr.put(check);
 							}
 							JSONObject query = IUtilities.createBoolQueryFor(Keywords.AND, checks);
-							PolicyRuleResult res = executeQuery(query, 1);
+							PolicyRuleResult res = executeQuery(query);
 							if (!IUtils.isNull(res) && res.getTotalHits() > 0) {
 								logger.info("Found " + res.getTotalHits() + " matches.");
 								res.setPolicyId(policy.getId());
@@ -110,6 +115,8 @@ public class PolicyExecutor {
 						}
 					}
 				}
+			} else {
+				logger.info("Policy is not searchable: " + policy.getName());
 			}
 		}
 		return results;
@@ -118,10 +125,9 @@ public class PolicyExecutor {
 	/**
 	 * Method to call search service to execute elastic query.
 	 * @param query
-	 * @param page
 	 * @return
 	 */
-	private PolicyRuleResult executeQuery(JSONObject query, int page) {
+	private PolicyRuleResult executeQuery(JSONObject query) {
 		String srchUlr = IUtilities.getSearchUrl(env, IConstants.ELASTIC_QUERY);
 		logger.info("searchUrl: " + srchUlr);
 		Map<String, Object> params = IUtils.getRestParamMap(
@@ -147,7 +153,6 @@ public class PolicyExecutor {
 	 * Method to translate policy into elastic query.
 	 * @return
 	 */
-	@SuppressWarnings("unused")
 	private JSONObject createPolicyQuery() {
 		if (!IUtils.isNull(policy) && !IUtils.isNull(policy.getRules()) &&
 				policy.getRules().size() > 0) {
@@ -156,9 +161,15 @@ public class PolicyExecutor {
 				logger.info("rule id: " + ruleid);
 				// Reload rule by id
 				Rule rule = rules.findById(ruleid).orElse(null);
-				List<JSONObject> checks = processRule(rule);
-				for (JSONObject check : checks) {
-					arr.put(check);
+				if (!IUtils.isNull(rule)) {
+					if (rule.isSearchable()) {
+						List<JSONObject> checks = processRule(rule);
+						for (JSONObject check : checks) {
+							arr.put(check);
+						}
+					} else {
+						logger.info("Rule is not searchable: " + rule.getName());
+					}
 				}
 			}
 			if (arr.length() > 0) {

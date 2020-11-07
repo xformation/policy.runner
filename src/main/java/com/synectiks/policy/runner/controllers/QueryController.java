@@ -175,9 +175,17 @@ public class QueryController {
 		if (policyId > 0) {
 			try {
 				Policy policy = policies.findById(policyId).orElse(null);
-				PolicyExecutor executor = new PolicyExecutor(policy);
-				executor.setNoCache(noCache);
-				json = executor.execute();
+				if (!IUtils.isNull(policy)) {
+					if (policy.isSearchable()) {
+						PolicyExecutor executor = new PolicyExecutor(policy);
+						executor.setNoCache(noCache);
+						json = executor.execute();
+					} else {
+						// Add your logic to execute non searchable query.
+					}
+				} else {
+					throw new Exception("Policy not found for id: " + policyId);
+				}
 			} catch (Throwable th) {
 				logger.error(th.getMessage(), th);
 				return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
