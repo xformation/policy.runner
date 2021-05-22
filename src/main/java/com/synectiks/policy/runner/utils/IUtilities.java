@@ -3,6 +3,7 @@ package com.synectiks.policy.runner.utils;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +19,8 @@ import com.synectiks.commons.entities.SourceEntity;
 import com.synectiks.commons.exceptions.SynectiksException;
 import com.synectiks.commons.interfaces.IApiController;
 import com.synectiks.commons.utils.IUtils;
+import com.synectiks.commons.utils.IUtils.CTypes;
+import com.synectiks.policy.runner.parsers.Value;
 import com.synectiks.policy.runner.utils.IConstants.KWTypes;
 import com.synectiks.policy.runner.utils.IConstants.Keywords;
 
@@ -121,7 +124,7 @@ public interface IUtilities {
 			sb.append("[");
 			for (Object o : objs) {
 				sb.append(sb.length() > 1 ? ", " : "");
-				sb.append(o.toString());
+				sb.append("\"" + o.toString() + "\"");
 			}
 			sb.append("]");
 			return sb.toString();
@@ -649,15 +652,15 @@ public interface IUtilities {
 		if (IUtils.isNullOrEmpty(key))
 			return;
 		try {
-			if (json.has(IConstants.LENGTH)) {
-				String val = json.getString(IConstants.LENGTH);
+			if (json.has(IConstants.PSD_STR_LEN)) {
+				String val = json.getString(IConstants.PSD_STR_LEN);
 				if (addSpace(key) || endWithConjOp(val)) {
 					key = val + IConsts.SPACE + key;
 				} else {
 					key = val + key;
 				}
 			}
-			json.put(IConstants.LENGTH, key);
+			json.put(IConstants.PSD_STR_LEN, key);
 		} catch(JSONException je) {
 			// ignore it.
 		}
@@ -937,5 +940,201 @@ public interface IUtilities {
 	static String getSearchUrl(Environment env, String srcApiPath) {
 		String searchHost = env.getProperty(IConsts.KEY_SEARCH_URL, "");
 		return searchHost + IApiController.URL_SEARCH + srcApiPath;
+	}
+
+	/**
+	 * Method to execute function on entity
+	 * @param entity
+	 * @param key
+	 * @param function
+	 * @return
+	 */
+	static Object evalFunction(JSONObject entity, String key, String function) {
+		Object res = null;
+		if (!IUtils.isNullOrEmpty(function)) {
+			switch(function) {
+			case "length":
+				// get length of key value
+				String val = entity.optString(key);
+				if (!IUtils.isNullOrEmpty(val)) {
+					res = val.length();
+				}
+				break;
+			}
+		}
+		return res;
+	}
+
+	/**
+	 * Compare keyval with value and show result according to operator.
+	 * @param keyVal
+	 * @param operator
+	 * @param value
+	 * @return
+	 */
+	static boolean evalOperator(Object keyVal, String operator, Object value) {
+		if (!IUtils.isNullOrEmpty(operator)) {
+			CTypes tp = null;
+			switch(operator) {
+			case "<":
+				tp = IUtils.getValueClassType(value);
+				return compareLessThan(tp, keyVal, value);
+			case ">":
+				tp = IUtils.getValueClassType(value);
+				return compareGreaterThan(tp, keyVal, value);
+			case "=":
+				tp = IUtils.getValueClassType(value);
+				return compareEquals(tp, keyVal, value);
+			case "<=":
+				tp = IUtils.getValueClassType(value);
+				return compareLessThanEqual(tp, keyVal, value);
+			case ">=":
+				tp = IUtils.getValueClassType(value);
+				return compareGreaterThanEqual(tp, keyVal, value);
+			case "!=":
+				tp = IUtils.getValueClassType(value);
+				return compareNotEquals(tp, keyVal, value);
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Method to compare value is less than or not, base on class type
+	 * @param tp
+	 * @param keyVal
+	 * @param value
+	 */
+	static boolean compareLessThan(CTypes tp, Object keyVal, Object value) {
+		switch(tp) {
+		case Double:
+			return (((Double) keyVal) < ((Double) value));
+		case Long:
+		case Integer:
+			return (((Integer) keyVal) < ((Integer) value));
+		default:
+			break;
+		}
+		return false;
+	}
+
+	/**
+	 * Method to compare value is greater than or not, base on class type
+	 * @param tp
+	 * @param keyVal
+	 * @param value
+	 */
+	static boolean compareGreaterThan(CTypes tp, Object keyVal, Object value) {
+		switch(tp) {
+		case Double:
+			return (((Double) keyVal) > ((Double) value));
+		case Long:
+		case Integer:
+			return (((Integer) keyVal) > ((Integer) value));
+		default:
+			break;
+		}
+		return false;
+	}
+
+	/**
+	 * Method to compare value is less than or equals, base on class type
+	 * @param tp
+	 * @param keyVal
+	 * @param value
+	 */
+	static boolean compareLessThanEqual(CTypes tp, Object keyVal, Object value) {
+		switch(tp) {
+		case Double:
+			return (((Double) keyVal) <= ((Double) value));
+		case Long:
+		case Integer:
+			return (((Integer) keyVal) <= ((Integer) value));
+		default:
+			break;
+		}
+		return false;
+	}
+
+	/**
+	 * Method to compare value is Greater than or equals, base on class type
+	 * @param tp
+	 * @param keyVal
+	 * @param value
+	 */
+	static boolean compareGreaterThanEqual(CTypes tp, Object keyVal, Object value) {
+		switch(tp) {
+		case Double:
+			return (((Double) keyVal) >= ((Double) value));
+		case Long:
+		case Integer:
+			return (((Integer) keyVal) >= ((Integer) value));
+		default:
+			break;
+		}
+		return false;
+	}
+
+	/**
+	 * Method to compare value is equals to keyval, base on class type
+	 * @param tp
+	 * @param keyVal
+	 * @param value
+	 */
+	static boolean compareEquals(CTypes tp, Object keyVal, Object value) {
+		switch(tp) {
+		case Double:
+			return (((Double) keyVal) == ((Double) value));
+		case Long:
+		case Integer:
+			return (((Integer) keyVal) == ((Integer) value));
+		case String:
+			if (!IUtils.isNull(keyVal)) {
+				return ((String) keyVal).equals(value);
+			}
+			break;
+		default:
+			break;
+		}
+		return false;
+	}
+
+	/**
+	 * Method to compare value is NOT equals to keyval, base on class type
+	 * @param tp
+	 * @param keyVal
+	 * @param value
+	 */
+	static boolean compareNotEquals(CTypes tp, Object keyVal, Object value) {
+		switch(tp) {
+		case Double:
+			return (((Double) keyVal) != ((Double) value));
+		case Long:
+		case Integer:
+			return (((Integer) keyVal) != ((Integer) value));
+		case String:
+			if (!IUtils.isNull(keyVal)) {
+				return !((String) keyVal).equals(value);
+			}
+			break;
+		default:
+			break;
+		}
+		return false;
+	}
+
+	/**
+	 * Method to evaluate if value exists in entity.
+	 * @param value
+	 * @param entity
+	 * @return
+	 */
+	static boolean evalFullText(Value value, JSONObject entity) {
+		boolean exists = false;
+		Map<String, Object> map = IUtils.getMapFromJson(entity);
+		if (!IUtils.isNull(map) && !IUtils.isNull(map.values())) {
+			exists = map.values().contains(value.getVal());
+		}
+		return exists;
 	}
 }

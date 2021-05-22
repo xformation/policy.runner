@@ -4,9 +4,7 @@
 package com.synectiks.policy.runner.utils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +18,14 @@ import com.synectiks.policy.runner.utils.OperatorsDesc.Operator;
 public interface IConstants {
 
 	Logger logger = LoggerFactory.getLogger(IConstants.class);
+	
+	/**
+	 * A regex which can validate folllowing date formats.
+	 * 1/10/2001, 23/1/2200, 1.10.2001,
+	 * 23-1-2002, May 23, 2004, 2003/03/05,
+	 * 2003-03-05, 2003.03.05
+	 */
+	String REGEX_TO_MATCH_DATE = "^(\\w{3}|\\d{1,4})[\\.\\-/\\s]\\d{1,2}[,\\-/\\.]\\s?\\d{1,4}";
 
 	/**
 	 * Data types for elastic mapping supported.
@@ -32,7 +38,33 @@ public interface IConstants {
 		TEXT,
 		DATE,
 		ARRAY,
-		OBJECT
+		OBJECT;
+
+		/**
+		 * Method to match string with regexes to identify its data type
+		 * @param input
+		 * @return
+		 */
+		public static DataTypes findType(String input) {
+			DataTypes type = null;
+			// regex to match if input is boolean, "true|false"
+			// regex to match if input is long, "-?\\d+$"
+			// regex to match if input is double "-?\\d+(\\.\\d+)?"
+			if (!IUtils.isNullOrEmpty(input)) {
+				if (input.matches("true|false")) {
+					type = BOOLEAN;
+				} else if (input.matches(REGEX_TO_MATCH_DATE)) {
+					type = DATE;
+				} else if (input.matches("-?\\d+$")) {
+					type = LONG;
+				} else if (input.matches("-?\\d+\\.\\d+$")) {
+					type = DOUBLE;
+				} else {
+					type = TEXT;
+				}
+			}
+			return type;
+		}
 	};
 
 	/**
@@ -55,11 +87,11 @@ public interface IConstants {
 	enum Keywords {
 		// Conjuctions
 		AND("AND", KWTypes.CONJUNCTION,
-				"A logical conjunction on two expressions to be matched. "
+				"A logical conjunction on two expressions, both to be matched. "
 				+ "i.e. key = value AND key = value"),
 		OR("OR", KWTypes.CONJUNCTION,
-				"A logical conjunction on two expressions to be matched. "
-				+ "i.e. key = value AND key = value"),
+				"A logical conjunction on two expressions, any to be matched. "
+				+ "i.e. key = value OR key = value"),
 		// Functions
 		ISEMPTY("isEmpty", KWTypes.FUNCTION,
 				"Check or select rows if the key&#39;s value is empty i.e. <i>key isEmpty</i>",
@@ -93,7 +125,7 @@ public interface IConstants {
 				+ " i.e. <i>key = (value1, value2, value3)</i>"),
 		DblQuote("\"", KWTypes.GROUP,
 				"The \" we use to combine a text with spaces. i.e. <i>key = \"sample value\"</i>"),
-		SnglQuote("&#39;", KWTypes.GROUP,
+		SnglQuote("'", KWTypes.GROUP,
 				"Another form of combining text with spaces. i.e. <i>key = &#39;sample value&#39;</i>"),
 		// Keyword
 		HAS("has", KWTypes.KEYWORD,
@@ -165,13 +197,13 @@ public interface IConstants {
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("{");
-			sb.append("key: \"" + key + "\"");
-			sb.append(", type: \"" + type + "\"");
+			sb.append("\"key\": \"" + key + "\"");
+			sb.append(", \"type\": \"" + type + "\"");
 			if (!IUtils.isNullOrEmpty(hint)) {
-				sb.append(", hint: \"" + hint + "\"");
+				sb.append(", \"hint\": \"" + hint + "\"");
 			}
 			if (!IUtils.isNull(supportedTypes) && supportedTypes.length > 0) {
-				sb.append(", supportedTypes: " + IUtilities.arrToString(supportedTypes));
+				sb.append(", \"supportedTypes\": " + IUtilities.arrToString(supportedTypes));
 			}
 			sb.append("}");
 			return sb.toString();
@@ -308,7 +340,7 @@ public interface IConstants {
 	String FIELDS = "fields";
 	String FORMAT = "format";
 	String EXISTS = "exists";
-	String LENGTH = "psdLen";
+	String PSD_STR_LEN = "processedString";
 	String MATCH = "match";
 	String MUST = "must";
 	String MUST_NOT = "must_not";
@@ -321,6 +353,7 @@ public interface IConstants {
 	String REGEXP = "regexp";
 	String SHOULD = "should";
 	String SHOULD_NOT = "should_not";
+	String SPACE = " ";
 	String TYPE = "type";
 	String WILDCARD = "wildcard";
 

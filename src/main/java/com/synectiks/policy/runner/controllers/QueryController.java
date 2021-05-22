@@ -32,6 +32,7 @@ import com.synectiks.commons.entities.PolicyRuleResult;
 import com.synectiks.commons.entities.SourceEntity;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.executor.PolicyExecutor;
+import com.synectiks.policy.runner.executor.RuleEngine;
 import com.synectiks.policy.runner.repositories.PolicyRepository;
 import com.synectiks.policy.runner.translators.QueryParser;
 import com.synectiks.policy.runner.utils.IConstants;
@@ -182,6 +183,7 @@ public class QueryController {
 						json = executor.execute();
 					} else {
 						// Add your logic to execute non searchable query.
+						RuleEngine re = new RuleEngine();
 					}
 				} else {
 					throw new Exception("Policy not found for id: " + policyId);

@@ -73,10 +73,10 @@ public class QueryParser implements IConstants {
 			if (IUtilities.isStartWithGroup(qry)) {
 				logger.info("Group: ");
 				exprs = handleGroupQuery(qry);
-				if (!IUtils.isNull(exprs) && exprs.has(IConstants.LENGTH)) {
+				if (!IUtils.isNull(exprs) && exprs.has(IConstants.PSD_STR_LEN)) {
 					qry = IUtilities.removeProcessedString(
-							qry, exprs.optString(IConstants.LENGTH));
-					exprs.remove(IConstants.LENGTH);
+							qry, exprs.optString(IConstants.PSD_STR_LEN));
+					exprs.remove(IConstants.PSD_STR_LEN);
 				}
 			} else if (IUtilities.isStartWithConjuction(qry)) {
 				logger.info("Conjunction: ");
@@ -179,10 +179,10 @@ public class QueryParser implements IConstants {
 					JSONObject lhs = null;
 					if (IUtilities.isStartWithGroup(qry)) {
 						lhs = handleGroupQuery(qry);
-						if (!IUtils.isNull(lhs) && lhs.has(IConstants.LENGTH)) {
+						if (!IUtils.isNull(lhs) && lhs.has(IConstants.PSD_STR_LEN)) {
 							IUtilities.addProcessedKey(json,
-									lhs.optString(IConstants.LENGTH));
-							lhs.remove(IConstants.LENGTH);
+									lhs.optString(IConstants.PSD_STR_LEN));
+							lhs.remove(IConstants.PSD_STR_LEN);
 						}
 					} else {
 						lhs = processQuery(qry);

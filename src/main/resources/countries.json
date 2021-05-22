@@ -1,0 +1,1478 @@
+[
+  {
+    "id": 1,
+    "countryName": "Afghanistan",
+    "isdCode": 93,
+    "countryCode": "AF"
+  },
+  {
+    "id": 2,
+    "countryName": "Åland Islands",
+    "isdCode": 358,
+    "countryCode": "AX"
+  },
+  {
+    "id": 3,
+    "countryName": "Albania",
+    "isdCode": 355,
+    "countryCode": "AL"
+  },
+  {
+    "id": 4,
+    "countryName": "Algeria",
+    "isdCode": 213,
+    "countryCode": "DZ"
+  },
+  {
+    "id": 5,
+    "countryName": "American Samoa",
+    "isdCode": 1684,
+    "countryCode": "AS"
+  },
+  {
+    "id": 6,
+    "countryName": "Andorra",
+    "isdCode": 376,
+    "countryCode": "AD"
+  },
+  {
+    "id": 7,
+    "countryName": "Angola",
+    "isdCode": 244,
+    "countryCode": "AO"
+  },
+  {
+    "id": 8,
+    "countryName": "Anguilla",
+    "isdCode": 1264,
+    "countryCode": "AI"
+  },
+  {
+    "id": 9,
+    "countryName": "Antarctica",
+    "isdCode": 672,
+    "countryCode": "AQ"
+  },
+  {
+    "id": 10,
+    "countryName": "Antigua and Barbuda",
+    "isdCode": 1268,
+    "countryCode": "AG"
+  },
+  {
+    "id": 11,
+    "countryName": "Argentina",
+    "isdCode": 54,
+    "countryCode": "AR"
+  },
+  {
+    "id": 12,
+    "countryName": "Armenia",
+    "isdCode": 374,
+    "countryCode": "AM"
+  },
+  {
+    "id": 13,
+    "countryName": "Aruba",
+    "isdCode": 297,
+    "countryCode": "AW"
+  },
+  {
+    "id": 14,
+    "countryName": "Australia",
+    "isdCode": 61,
+    "countryCode": "AU"
+  },
+  {
+    "id": 15,
+    "countryName": "Austria",
+    "isdCode": 43,
+    "countryCode": "AT"
+  },
+  {
+    "id": 16,
+    "countryName": "Azerbaijan",
+    "isdCode": 994,
+    "countryCode": "AZ"
+  },
+  {
+    "id": 17,
+    "countryName": "Bahamas",
+    "isdCode": 1242,
+    "countryCode": "BS"
+  },
+  {
+    "id": 18,
+    "countryName": "Bahrain",
+    "isdCode": 973,
+    "countryCode": "BH"
+  },
+  {
+    "id": 19,
+    "countryName": "Bangladesh",
+    "isdCode": 880,
+    "countryCode": "BD"
+  },
+  {
+    "id": 20,
+    "countryName": "Barbados",
+    "isdCode": 1246,
+    "countryCode": "BB"
+  },
+  {
+    "id": 21,
+    "countryName": "Belarus",
+    "isdCode": 375,
+    "countryCode": "BY"
+  },
+  {
+    "id": 22,
+    "countryName": "Belgium",
+    "isdCode": 32,
+    "countryCode": "BE"
+  },
+  {
+    "id": 23,
+    "countryName": "Belize",
+    "isdCode": 501,
+    "countryCode": "BZ"
+  },
+  {
+    "id": 24,
+    "countryName": "Benin",
+    "isdCode": 229,
+    "countryCode": "BJ"
+  },
+  {
+    "id": 25,
+    "countryName": "Bermuda",
+    "isdCode": 1441,
+    "countryCode": "BM"
+  },
+  {
+    "id": 26,
+    "countryName": "Bhutan",
+    "isdCode": 975,
+    "countryCode": "BT"
+  },
+  {
+    "id": 27,
+    "countryName": "Bolivia, Plurinational State of bolivia",
+    "isdCode": 591,
+    "countryCode": "BO"
+  },
+  {
+    "id": 28,
+    "countryName": "Bosnia and Herzegovina",
+    "isdCode": 387,
+    "countryCode": "BA"
+  },
+  {
+    "id": 29,
+    "countryName": "Botswana",
+    "isdCode": 267,
+    "countryCode": "BW"
+  },
+  {
+    "id": 30,
+    "countryName": "Bouvet Island",
+    "isdCode": 47,
+    "countryCode": "BV"
+  },
+  {
+    "id": 31,
+    "countryName": "Brazil",
+    "isdCode": 55,
+    "countryCode": "BR"
+  },
+  {
+    "id": 32,
+    "countryName": "British Indian Ocean Territory",
+    "isdCode": 246,
+    "countryCode": "IO"
+  },
+  {
+    "id": 33,
+    "countryName": "Brunei Darussalam",
+    "isdCode": 673,
+    "countryCode": "BN"
+  },
+  {
+    "id": 34,
+    "countryName": "Bulgaria",
+    "isdCode": 359,
+    "countryCode": "BG"
+  },
+  {
+    "id": 35,
+    "countryName": "Burkina Faso",
+    "isdCode": 226,
+    "countryCode": "BF"
+  },
+  {
+    "id": 36,
+    "countryName": "Burundi",
+    "isdCode": 257,
+    "countryCode": "BI"
+  },
+  {
+    "id": 37,
+    "countryName": "Cambodia",
+    "isdCode": 855,
+    "countryCode": "KH"
+  },
+  {
+    "id": 38,
+    "countryName": "Cameroon",
+    "isdCode": 237,
+    "countryCode": "CM"
+  },
+  {
+    "id": 39,
+    "countryName": "Canada",
+    "isdCode": 1,
+    "countryCode": "CA"
+  },
+  {
+    "id": 40,
+    "countryName": "Cape Verde",
+    "isdCode": 238,
+    "countryCode": "CV"
+  },
+  {
+    "id": 41,
+    "countryName": "Cayman Islands",
+    "isdCode": 345,
+    "countryCode": "KY"
+  },
+  {
+    "id": 42,
+    "countryName": "Central African Republic",
+    "isdCode": 236,
+    "countryCode": "CF"
+  },
+  {
+    "id": 43,
+    "countryName": "Chad",
+    "isdCode": 235,
+    "countryCode": "TD"
+  },
+  {
+    "id": 44,
+    "countryName": "Chile",
+    "isdCode": 56,
+    "countryCode": "CL"
+  },
+  {
+    "id": 45,
+    "countryName": "China",
+    "isdCode": 86,
+    "countryCode": "CN"
+  },
+  {
+    "id": 46,
+    "countryName": "Christmas Island",
+    "isdCode": 61,
+    "countryCode": "CX"
+  },
+  {
+    "id": 47,
+    "countryName": "Cocos (Keeling) Islands",
+    "isdCode": 61,
+    "countryCode": "CC"
+  },
+  {
+    "id": 48,
+    "countryName": "Colombia",
+    "isdCode": 57,
+    "countryCode": "CO"
+  },
+  {
+    "id": 49,
+    "countryName": "Comoros",
+    "isdCode": 269,
+    "countryCode": "KM"
+  },
+  {
+    "id": 50,
+    "countryName": "Congo",
+    "isdCode": 242,
+    "countryCode": "CG"
+  },
+  {
+    "id": 51,
+    "countryName": "Congo, The Democratic Republic of the Congo",
+    "isdCode": 243,
+    "countryCode": "CD"
+  },
+  {
+    "id": 52,
+    "countryName": "Cook Islands",
+    "isdCode": 682,
+    "countryCode": "CK"
+  },
+  {
+    "id": 53,
+    "countryName": "Costa Rica",
+    "isdCode": 506,
+    "countryCode": "CR"
+  },
+  {
+    "id": 54,
+    "countryName": "Cote d'Ivoire",
+    "isdCode": 225,
+    "countryCode": "CI"
+  },
+  {
+    "id": 55,
+    "countryName": "Croatia",
+    "isdCode": 385,
+    "countryCode": "HR"
+  },
+  {
+    "id": 56,
+    "countryName": "Cuba",
+    "isdCode": 53,
+    "countryCode": "CU"
+  },
+  {
+    "id": 57,
+    "countryName": "Cyprus",
+    "isdCode": 357,
+    "countryCode": "CY"
+  },
+  {
+    "id": 58,
+    "countryName": "Czech Republic",
+    "isdCode": 420,
+    "countryCode": "CZ"
+  },
+  {
+    "id": 59,
+    "countryName": "Denmark",
+    "isdCode": 45,
+    "countryCode": "DK"
+  },
+  {
+    "id": 60,
+    "countryName": "Djibouti",
+    "isdCode": 253,
+    "countryCode": "DJ"
+  },
+  {
+    "id": 61,
+    "countryName": "Dominica",
+    "isdCode": 1767,
+    "countryCode": "DM"
+  },
+  {
+    "id": 62,
+    "countryName": "Dominican Republic",
+    "isdCode": 1849,
+    "countryCode": "DO"
+  },
+  {
+    "id": 63,
+    "countryName": "Ecuador",
+    "isdCode": 593,
+    "countryCode": "EC"
+  },
+  {
+    "id": 64,
+    "countryName": "Egypt",
+    "isdCode": 20,
+    "countryCode": "EG"
+  },
+  {
+    "id": 65,
+    "countryName": "El Salvador",
+    "isdCode": 503,
+    "countryCode": "SV"
+  },
+  {
+    "id": 66,
+    "countryName": "Equatorial Guinea",
+    "isdCode": 240,
+    "countryCode": "GQ"
+  },
+  {
+    "id": 67,
+    "countryName": "Eritrea",
+    "isdCode": 291,
+    "countryCode": "ER"
+  },
+  {
+    "id": 68,
+    "countryName": "Estonia",
+    "isdCode": 372,
+    "countryCode": "EE"
+  },
+  {
+    "id": 69,
+    "countryName": "Ethiopia",
+    "isdCode": 251,
+    "countryCode": "ET"
+  },
+  {
+    "id": 70,
+    "countryName": "Falkland Islands (Malvinas)",
+    "isdCode": 500,
+    "countryCode": "FK"
+  },
+  {
+    "id": 71,
+    "countryName": "Faroe Islands",
+    "isdCode": 298,
+    "countryCode": "FO"
+  },
+  {
+    "id": 72,
+    "countryName": "Fiji",
+    "isdCode": 679,
+    "countryCode": "FJ"
+  },
+  {
+    "id": 73,
+    "countryName": "Finland",
+    "isdCode": 358,
+    "countryCode": "FI"
+  },
+  {
+    "id": 74,
+    "countryName": "France",
+    "isdCode": 33,
+    "countryCode": "FR"
+  },
+  {
+    "id": 75,
+    "countryName": "French Guiana",
+    "isdCode": 594,
+    "countryCode": "GF"
+  },
+  {
+    "id": 76,
+    "countryName": "French Polynesia",
+    "isdCode": 689,
+    "countryCode": "PF"
+  },
+  {
+    "id": 77,
+    "countryName": "French Southern Territories",
+    "isdCode": 262,
+    "countryCode": "TF"
+  },
+  {
+    "id": 78,
+    "countryName": "Gabon",
+    "isdCode": 241,
+    "countryCode": "GA"
+  },
+  {
+    "id": 79,
+    "countryName": "Gambia",
+    "isdCode": 220,
+    "countryCode": "GM"
+  },
+  {
+    "id": 80,
+    "countryName": "Georgia",
+    "isdCode": 995,
+    "countryCode": "GE"
+  },
+  {
+    "id": 81,
+    "countryName": "Germany",
+    "isdCode": 49,
+    "countryCode": "DE"
+  },
+  {
+    "id": 82,
+    "countryName": "Ghana",
+    "isdCode": 233,
+    "countryCode": "GH"
+  },
+  {
+    "id": 83,
+    "countryName": "Gibraltar",
+    "isdCode": 350,
+    "countryCode": "GI"
+  },
+  {
+    "id": 84,
+    "countryName": "Greece",
+    "isdCode": 30,
+    "countryCode": "GR"
+  },
+  {
+    "id": 85,
+    "countryName": "Greenland",
+    "isdCode": 299,
+    "countryCode": "GL"
+  },
+  {
+    "id": 86,
+    "countryName": "Grenada",
+    "isdCode": 1473,
+    "countryCode": "GD"
+  },
+  {
+    "id": 87,
+    "countryName": "Guadeloupe",
+    "isdCode": 590,
+    "countryCode": "GP"
+  },
+  {
+    "id": 88,
+    "countryName": "Guam",
+    "isdCode": 1671,
+    "countryCode": "GU"
+  },
+  {
+    "id": 89,
+    "countryName": "Guatemala",
+    "isdCode": 502,
+    "countryCode": "GT"
+  },
+  {
+    "id": 90,
+    "countryName": "Guernsey",
+    "isdCode": 44,
+    "countryCode": "GG"
+  },
+  {
+    "id": 91,
+    "countryName": "Guinea",
+    "isdCode": 224,
+    "countryCode": "GN"
+  },
+  {
+    "id": 92,
+    "countryName": "Guinea-Bissau",
+    "isdCode": 245,
+    "countryCode": "GW"
+  },
+  {
+    "id": 93,
+    "countryName": "Guyana",
+    "isdCode": 592,
+    "countryCode": "GY"
+  },
+  {
+    "id": 94,
+    "countryName": "Haiti",
+    "isdCode": 509,
+    "countryCode": "HT"
+  },
+  {
+    "id": 95,
+    "countryName": "Heard Island and Mcdonald Islands",
+    "isdCode": 0,
+    "countryCode": "HM"
+  },
+  {
+    "id": 96,
+    "countryName": "Holy See (Vatican City State)",
+    "isdCode": 379,
+    "countryCode": "VA"
+  },
+  {
+    "id": 97,
+    "countryName": "Honduras",
+    "isdCode": 504,
+    "countryCode": "HN"
+  },
+  {
+    "id": 98,
+    "countryName": "Hong Kong",
+    "isdCode": 852,
+    "countryCode": "HK"
+  },
+  {
+    "id": 99,
+    "countryName": "Hungary",
+    "isdCode": 36,
+    "countryCode": "HU"
+  },
+  {
+    "id": 100,
+    "countryName": "Iceland",
+    "isdCode": 354,
+    "countryCode": "IS"
+  },
+  {
+    "id": 101,
+    "countryName": "India",
+    "isdCode": 91,
+    "countryCode": "IN"
+  },
+  {
+    "id": 102,
+    "countryName": "Indonesia",
+    "isdCode": 62,
+    "countryCode": "ID"
+  },
+  {
+    "id": 103,
+    "countryName": "Iran, Islamic Republic of Persian Gulf",
+    "isdCode": 98,
+    "countryCode": "IR"
+  },
+  {
+    "id": 104,
+    "countryName": "Iraq",
+    "isdCode": 964,
+    "countryCode": "IQ"
+  },
+  {
+    "id": 105,
+    "countryName": "Ireland",
+    "isdCode": 353,
+    "countryCode": "IE"
+  },
+  {
+    "id": 106,
+    "countryName": "Isle of Man",
+    "isdCode": 44,
+    "countryCode": "IM"
+  },
+  {
+    "id": 107,
+    "countryName": "Israel",
+    "isdCode": 972,
+    "countryCode": "IL"
+  },
+  {
+    "id": 108,
+    "countryName": "Italy",
+    "isdCode": 39,
+    "countryCode": "IT"
+  },
+  {
+    "id": 109,
+    "countryName": "Jamaica",
+    "isdCode": 1876,
+    "countryCode": "JM"
+  },
+  {
+    "id": 110,
+    "countryName": "Japan",
+    "isdCode": 81,
+    "countryCode": "JP"
+  },
+  {
+    "id": 111,
+    "countryName": "Jersey",
+    "isdCode": 44,
+    "countryCode": "JE"
+  },
+  {
+    "id": 112,
+    "countryName": "Jordan",
+    "isdCode": 962,
+    "countryCode": "JO"
+  },
+  {
+    "id": 113,
+    "countryName": "Kazakhstan",
+    "isdCode": 7,
+    "countryCode": "KZ"
+  },
+  {
+    "id": 114,
+    "countryName": "Kenya",
+    "isdCode": 254,
+    "countryCode": "KE"
+  },
+  {
+    "id": 115,
+    "countryName": "Kiribati",
+    "isdCode": 686,
+    "countryCode": "KI"
+  },
+  {
+    "id": 116,
+    "countryName": "Korea, Democratic People's Republic of Korea",
+    "isdCode": 850,
+    "countryCode": "KP"
+  },
+  {
+    "id": 117,
+    "countryName": "Korea, Republic of South Korea",
+    "isdCode": 82,
+    "countryCode": "KR"
+  },
+  {
+    "id": 118,
+    "countryName": "Kosovo",
+    "isdCode": 383,
+    "countryCode": "XK"
+  },
+  {
+    "id": 119,
+    "countryName": "Kuwait",
+    "isdCode": 965,
+    "countryCode": "KW"
+  },
+  {
+    "id": 120,
+    "countryName": "Kyrgyzstan",
+    "isdCode": 996,
+    "countryCode": "KG"
+  },
+  {
+    "id": 121,
+    "countryName": "Laos",
+    "isdCode": 856,
+    "countryCode": "LA"
+  },
+  {
+    "id": 122,
+    "countryName": "Latvia",
+    "isdCode": 371,
+    "countryCode": "LV"
+  },
+  {
+    "id": 123,
+    "countryName": "Lebanon",
+    "isdCode": 961,
+    "countryCode": "LB"
+  },
+  {
+    "id": 124,
+    "countryName": "Lesotho",
+    "isdCode": 266,
+    "countryCode": "LS"
+  },
+  {
+    "id": 125,
+    "countryName": "Liberia",
+    "isdCode": 231,
+    "countryCode": "LR"
+  },
+  {
+    "id": 126,
+    "countryName": "Libyan Arab Jamahiriya",
+    "isdCode": 218,
+    "countryCode": "LY"
+  },
+  {
+    "id": 127,
+    "countryName": "Liechtenstein",
+    "isdCode": 423,
+    "countryCode": "LI"
+  },
+  {
+    "id": 128,
+    "countryName": "Lithuania",
+    "isdCode": 370,
+    "countryCode": "LT"
+  },
+  {
+    "id": 129,
+    "countryName": "Luxembourg",
+    "isdCode": 352,
+    "countryCode": "LU"
+  },
+  {
+    "id": 130,
+    "countryName": "Macao",
+    "isdCode": 853,
+    "countryCode": "MO"
+  },
+  {
+    "id": 131,
+    "countryName": "Macedonia",
+    "isdCode": 389,
+    "countryCode": "MK"
+  },
+  {
+    "id": 132,
+    "countryName": "Madagascar",
+    "isdCode": 261,
+    "countryCode": "MG"
+  },
+  {
+    "id": 133,
+    "countryName": "Malawi",
+    "isdCode": 265,
+    "countryCode": "MW"
+  },
+  {
+    "id": 134,
+    "countryName": "Malaysia",
+    "isdCode": 60,
+    "countryCode": "MY"
+  },
+  {
+    "id": 135,
+    "countryName": "Maldives",
+    "isdCode": 960,
+    "countryCode": "MV"
+  },
+  {
+    "id": 136,
+    "countryName": "Mali",
+    "isdCode": 223,
+    "countryCode": "ML"
+  },
+  {
+    "id": 137,
+    "countryName": "Malta",
+    "isdCode": 356,
+    "countryCode": "MT"
+  },
+  {
+    "id": 138,
+    "countryName": "Marshall Islands",
+    "isdCode": 692,
+    "countryCode": "MH"
+  },
+  {
+    "id": 139,
+    "countryName": "Martinique",
+    "isdCode": 596,
+    "countryCode": "MQ"
+  },
+  {
+    "id": 140,
+    "countryName": "Mauritania",
+    "isdCode": 222,
+    "countryCode": "MR"
+  },
+  {
+    "id": 141,
+    "countryName": "Mauritius",
+    "isdCode": 230,
+    "countryCode": "MU"
+  },
+  {
+    "id": 142,
+    "countryName": "Mayotte",
+    "isdCode": 262,
+    "countryCode": "YT"
+  },
+  {
+    "id": 143,
+    "countryName": "Mexico",
+    "isdCode": 52,
+    "countryCode": "MX"
+  },
+  {
+    "id": 144,
+    "countryName": "Micronesia, Federated States of Micronesia",
+    "isdCode": 691,
+    "countryCode": "FM"
+  },
+  {
+    "id": 145,
+    "countryName": "Moldova",
+    "isdCode": 373,
+    "countryCode": "MD"
+  },
+  {
+    "id": 146,
+    "countryName": "Monaco",
+    "isdCode": 377,
+    "countryCode": "MC"
+  },
+  {
+    "id": 147,
+    "countryName": "Mongolia",
+    "isdCode": 976,
+    "countryCode": "MN"
+  },
+  {
+    "id": 148,
+    "countryName": "Montenegro",
+    "isdCode": 382,
+    "countryCode": "ME"
+  },
+  {
+    "id": 149,
+    "countryName": "Montserrat",
+    "isdCode": 1664,
+    "countryCode": "MS"
+  },
+  {
+    "id": 150,
+    "countryName": "Morocco",
+    "isdCode": 212,
+    "countryCode": "MA"
+  },
+  {
+    "id": 151,
+    "countryName": "Mozambique",
+    "isdCode": 258,
+    "countryCode": "MZ"
+  },
+  {
+    "id": 152,
+    "countryName": "Myanmar",
+    "isdCode": 95,
+    "countryCode": "MM"
+  },
+  {
+    "id": 153,
+    "countryName": "Namibia",
+    "isdCode": 264,
+    "countryCode": "NA"
+  },
+  {
+    "id": 154,
+    "countryName": "Nauru",
+    "isdCode": 674,
+    "countryCode": "NR"
+  },
+  {
+    "id": 155,
+    "countryName": "Nepal",
+    "isdCode": 977,
+    "countryCode": "NP"
+  },
+  {
+    "id": 156,
+    "countryName": "Netherlands",
+    "isdCode": 31,
+    "countryCode": "NL"
+  },
+  {
+    "id": 157,
+    "countryName": "Netherlands Antilles",
+    "isdCode": 599,
+    "countryCode": "AN"
+  },
+  {
+    "id": 158,
+    "countryName": "New Caledonia",
+    "isdCode": 687,
+    "countryCode": "NC"
+  },
+  {
+    "id": 159,
+    "countryName": "New Zealand",
+    "isdCode": 64,
+    "countryCode": "NZ"
+  },
+  {
+    "id": 160,
+    "countryName": "Nicaragua",
+    "isdCode": 505,
+    "countryCode": "NI"
+  },
+  {
+    "id": 161,
+    "countryName": "Niger",
+    "isdCode": 227,
+    "countryCode": "NE"
+  },
+  {
+    "id": 162,
+    "countryName": "Nigeria",
+    "isdCode": 234,
+    "countryCode": "NG"
+  },
+  {
+    "id": 163,
+    "countryName": "Niue",
+    "isdCode": 683,
+    "countryCode": "NU"
+  },
+  {
+    "id": 164,
+    "countryName": "Norfolk Island",
+    "isdCode": 672,
+    "countryCode": "NF"
+  },
+  {
+    "id": 165,
+    "countryName": "Northern Mariana Islands",
+    "isdCode": 1670,
+    "countryCode": "MP"
+  },
+  {
+    "id": 166,
+    "countryName": "Norway",
+    "isdCode": 47,
+    "countryCode": "NO"
+  },
+  {
+    "id": 167,
+    "countryName": "Oman",
+    "isdCode": 968,
+    "countryCode": "OM"
+  },
+  {
+    "id": 168,
+    "countryName": "Pakistan",
+    "isdCode": 92,
+    "countryCode": "PK"
+  },
+  {
+    "id": 169,
+    "countryName": "Palau",
+    "isdCode": 680,
+    "countryCode": "PW"
+  },
+  {
+    "id": 170,
+    "countryName": "Palestinian Territory, Occupied",
+    "isdCode": 970,
+    "countryCode": "PS"
+  },
+  {
+    "id": 171,
+    "countryName": "Panama",
+    "isdCode": 507,
+    "countryCode": "PA"
+  },
+  {
+    "id": 172,
+    "countryName": "Papua New Guinea",
+    "isdCode": 675,
+    "countryCode": "PG"
+  },
+  {
+    "id": 173,
+    "countryName": "Paraguay",
+    "isdCode": 595,
+    "countryCode": "PY"
+  },
+  {
+    "id": 174,
+    "countryName": "Peru",
+    "isdCode": 51,
+    "countryCode": "PE"
+  },
+  {
+    "id": 175,
+    "countryName": "Philippines",
+    "isdCode": 63,
+    "countryCode": "PH"
+  },
+  {
+    "id": 176,
+    "countryName": "Pitcairn",
+    "isdCode": 64,
+    "countryCode": "PN"
+  },
+  {
+    "id": 177,
+    "countryName": "Poland",
+    "isdCode": 48,
+    "countryCode": "PL"
+  },
+  {
+    "id": 178,
+    "countryName": "Portugal",
+    "isdCode": 351,
+    "countryCode": "PT"
+  },
+  {
+    "id": 179,
+    "countryName": "Puerto Rico",
+    "isdCode": 1939,
+    "countryCode": "PR"
+  },
+  {
+    "id": 180,
+    "countryName": "Qatar",
+    "isdCode": 974,
+    "countryCode": "QA"
+  },
+  {
+    "id": 181,
+    "countryName": "Romania",
+    "isdCode": 40,
+    "countryCode": "RO"
+  },
+  {
+    "id": 182,
+    "countryName": "Russia",
+    "isdCode": 7,
+    "countryCode": "RU"
+  },
+  {
+    "id": 183,
+    "countryName": "Rwanda",
+    "isdCode": 250,
+    "countryCode": "RW"
+  },
+  {
+    "id": 184,
+    "countryName": "Reunion",
+    "isdCode": 262,
+    "countryCode": "RE"
+  },
+  {
+    "id": 185,
+    "countryName": "Saint Barthelemy",
+    "isdCode": 590,
+    "countryCode": "BL"
+  },
+  {
+    "id": 186,
+    "countryName": "Saint Helena, Ascension and Tristan Da Cunha",
+    "isdCode": 290,
+    "countryCode": "SH"
+  },
+  {
+    "id": 187,
+    "countryName": "Saint Kitts and Nevis",
+    "isdCode": 1869,
+    "countryCode": "KN"
+  },
+  {
+    "id": 188,
+    "countryName": "Saint Lucia",
+    "isdCode": 1758,
+    "countryCode": "LC"
+  },
+  {
+    "id": 189,
+    "countryName": "Saint Martin",
+    "isdCode": 590,
+    "countryCode": "MF"
+  },
+  {
+    "id": 190,
+    "countryName": "Saint Pierre and Miquelon",
+    "isdCode": 508,
+    "countryCode": "PM"
+  },
+  {
+    "id": 191,
+    "countryName": "Saint Vincent and the Grenadines",
+    "isdCode": 1784,
+    "countryCode": "VC"
+  },
+  {
+    "id": 192,
+    "countryName": "Samoa",
+    "isdCode": 685,
+    "countryCode": "WS"
+  },
+  {
+    "id": 193,
+    "countryName": "San Marino",
+    "isdCode": 378,
+    "countryCode": "SM"
+  },
+  {
+    "id": 194,
+    "countryName": "Sao Tome and Principe",
+    "isdCode": 239,
+    "countryCode": "ST"
+  },
+  {
+    "id": 195,
+    "countryName": "Saudi Arabia",
+    "isdCode": 966,
+    "countryCode": "SA"
+  },
+  {
+    "id": 196,
+    "countryName": "Senegal",
+    "isdCode": 221,
+    "countryCode": "SN"
+  },
+  {
+    "id": 197,
+    "countryName": "Serbia",
+    "isdCode": 381,
+    "countryCode": "RS"
+  },
+  {
+    "id": 198,
+    "countryName": "Seychelles",
+    "isdCode": 248,
+    "countryCode": "SC"
+  },
+  {
+    "id": 199,
+    "countryName": "Sierra Leone",
+    "isdCode": 232,
+    "countryCode": "SL"
+  },
+  {
+    "id": 200,
+    "countryName": "Singapore",
+    "isdCode": 65,
+    "countryCode": "SG"
+  },
+  {
+    "id": 201,
+    "countryName": "Slovakia",
+    "isdCode": 421,
+    "countryCode": "SK"
+  },
+  {
+    "id": 202,
+    "countryName": "Slovenia",
+    "isdCode": 386,
+    "countryCode": "SI"
+  },
+  {
+    "id": 203,
+    "countryName": "Solomon Islands",
+    "isdCode": 677,
+    "countryCode": "SB"
+  },
+  {
+    "id": 204,
+    "countryName": "Somalia",
+    "isdCode": 252,
+    "countryCode": "SO"
+  },
+  {
+    "id": 205,
+    "countryName": "South Africa",
+    "isdCode": 27,
+    "countryCode": "ZA"
+  },
+  {
+    "id": 206,
+    "countryName": "South Sudan",
+    "isdCode": 211,
+    "countryCode": "SS"
+  },
+  {
+    "id": 207,
+    "countryName": "South Georgia and the South Sandwich Islands",
+    "isdCode": 500,
+    "countryCode": "GS"
+  },
+  {
+    "id": 208,
+    "countryName": "Spain",
+    "isdCode": 34,
+    "countryCode": "ES"
+  },
+  {
+    "id": 209,
+    "countryName": "Sri Lanka",
+    "isdCode": 94,
+    "countryCode": "LK"
+  },
+  {
+    "id": 210,
+    "countryName": "Sudan",
+    "isdCode": 249,
+    "countryCode": "SD"
+  },
+  {
+    "id": 211,
+    "countryName": "Suriname",
+    "isdCode": 597,
+    "countryCode": "SR"
+  },
+  {
+    "id": 212,
+    "countryName": "Svalbard and Jan Mayen",
+    "isdCode": 47,
+    "countryCode": "SJ"
+  },
+  {
+    "id": 213,
+    "countryName": "Swaziland",
+    "isdCode": 268,
+    "countryCode": "SZ"
+  },
+  {
+    "id": 214,
+    "countryName": "Sweden",
+    "isdCode": 46,
+    "countryCode": "SE"
+  },
+  {
+    "id": 215,
+    "countryName": "Switzerland",
+    "isdCode": 41,
+    "countryCode": "CH"
+  },
+  {
+    "id": 216,
+    "countryName": "Syrian Arab Republic",
+    "isdCode": 963,
+    "countryCode": "SY"
+  },
+  {
+    "id": 217,
+    "countryName": "Taiwan",
+    "isdCode": 886,
+    "countryCode": "TW"
+  },
+  {
+    "id": 218,
+    "countryName": "Tajikistan",
+    "isdCode": 992,
+    "countryCode": "TJ"
+  },
+  {
+    "id": 219,
+    "countryName": "Tanzania, United Republic of Tanzania",
+    "isdCode": 255,
+    "countryCode": "TZ"
+  },
+  {
+    "id": 220,
+    "countryName": "Thailand",
+    "isdCode": 66,
+    "countryCode": "TH"
+  },
+  {
+    "id": 221,
+    "countryName": "Timor-Leste",
+    "isdCode": 670,
+    "countryCode": "TL"
+  },
+  {
+    "id": 222,
+    "countryName": "Togo",
+    "isdCode": 228,
+    "countryCode": "TG"
+  },
+  {
+    "id": 223,
+    "countryName": "Tokelau",
+    "isdCode": 690,
+    "countryCode": "TK"
+  },
+  {
+    "id": 224,
+    "countryName": "Tonga",
+    "isdCode": 676,
+    "countryCode": "TO"
+  },
+  {
+    "id": 225,
+    "countryName": "Trinidad and Tobago",
+    "isdCode": 1868,
+    "countryCode": "TT"
+  },
+  {
+    "id": 226,
+    "countryName": "Tunisia",
+    "isdCode": 216,
+    "countryCode": "TN"
+  },
+  {
+    "id": 227,
+    "countryName": "Turkey",
+    "isdCode": 90,
+    "countryCode": "TR"
+  },
+  {
+    "id": 228,
+    "countryName": "Turkmenistan",
+    "isdCode": 993,
+    "countryCode": "TM"
+  },
+  {
+    "id": 229,
+    "countryName": "Turks and Caicos Islands",
+    "isdCode": 1649,
+    "countryCode": "TC"
+  },
+  {
+    "id": 230,
+    "countryName": "Tuvalu",
+    "isdCode": 688,
+    "countryCode": "TV"
+  },
+  {
+    "id": 231,
+    "countryName": "Uganda",
+    "isdCode": 256,
+    "countryCode": "UG"
+  },
+  {
+    "id": 232,
+    "countryName": "Ukraine",
+    "isdCode": 380,
+    "countryCode": "UA"
+  },
+  {
+    "id": 233,
+    "countryName": "United Arab Emirates",
+    "isdCode": 971,
+    "countryCode": "AE"
+  },
+  {
+    "id": 234,
+    "countryName": "United Kingdom",
+    "isdCode": 44,
+    "countryCode": "GB"
+  },
+  {
+    "id": 235,
+    "countryName": "United States",
+    "isdCode": 1,
+    "countryCode": "US"
+  },
+  {
+    "id": 236,
+    "countryName": "Uruguay",
+    "isdCode": 598,
+    "countryCode": "UY"
+  },
+  {
+    "id": 237,
+    "countryName": "Uzbekistan",
+    "isdCode": 998,
+    "countryCode": "UZ"
+  },
+  {
+    "id": 238,
+    "countryName": "Vanuatu",
+    "isdCode": 678,
+    "countryCode": "VU"
+  },
+  {
+    "id": 239,
+    "countryName": "Venezuela, Bolivarian Republic of Venezuela",
+    "isdCode": 58,
+    "countryCode": "VE"
+  },
+  {
+    "id": 240,
+    "countryName": "Vietnam",
+    "isdCode": 84,
+    "countryCode": "VN"
+  },
+  {
+    "id": 241,
+    "countryName": "Virgin Islands, British",
+    "isdCode": 1284,
+    "countryCode": "VG"
+  },
+  {
+    "id": 242,
+    "countryName": "Virgin Islands, U.S.",
+    "isdCode": 1340,
+    "countryCode": "VI"
+  },
+  {
+    "id": 243,
+    "countryName": "Wallis and Futuna",
+    "isdCode": 681,
+    "countryCode": "WF"
+  },
+  {
+    "id": 244,
+    "countryName": "Yemen",
+    "isdCode": 967,
+    "countryCode": "YE"
+  },
+  {
+    "id": 245,
+    "countryName": "Zambia",
+    "isdCode": 260,
+    "countryCode": "ZM"
+  },
+  {
+    "id": 246,
+    "countryName": "Zimbabwe",
+    "isdCode": 263,
+    "countryCode": "ZW"
+  }
+]
