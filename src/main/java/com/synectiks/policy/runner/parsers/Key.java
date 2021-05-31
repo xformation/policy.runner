@@ -45,6 +45,7 @@ public class Key implements Serializable {
 	 */
 	private boolean isWildcard;
 
+	/** true if we have to evaluate the length of value. */
 	private boolean isLenCheck;
 
 	private Key(String key, String processedStr, boolean multi) {

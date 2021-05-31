@@ -72,8 +72,8 @@ public class RuleTranslator {
 				"root.node.key isNotEmpty",
 				"[key1, key2, *Id] value", // Search value in key fields with wildcard key name
 				"[key1, key2] +\"Rajesh Kumar\"", // Search Rajesh AND Kumar  in key fields multi_match
-				"root.node.key = 'A?c*fg'", // LIKE
-				"root.node.sub.key != 'A?c*fg'", // NOT LIKE
+				"root.node.key = 'A?c*fg'", // Like
+				"root.node.sub.key != 'A?c*fg'", // NOT Like
 				"key = (value1, value2, value3)", // IN
 				"root.key != (value1, value2, value3)", // NOT IN
 				"root.node.key >= toDate('2018-08-15 13:20:30')", // Default format: yyyy-MM-dd HH:mm:ss

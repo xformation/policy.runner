@@ -31,33 +31,33 @@ public class RuleEngine {
 	private static Logger logger = LoggerFactory.getLogger(RuleEngine.class);
 
 	private static String[] QUERIES = {
-			"value", // Full text search in all fields- { "query_string": { "query": "abc" } } or { "match": { "_all": "abc" } }
-			"has root.node.key", // Check if field exists
-			"root.node.key = 'value'",
-			"root.node.key > 10",
-			"root.node.key < 10",
-			"root.node.key != 10",
-			"root.node.key >= 10",
-			"root.node.key <= 10",
-			"root.node.key regex('^R.*esh$')",
-			"root.node.key isNull",
-			"root.node.key isEmpty",
-			"root.node.key isNotNull",
-			"root.node.key isNotEmpty",
-			"[key1, key2, *Id] value", // Search value in key fields with wildcard key name
-			"[key1, key2] +\"Rajesh Kumar\"", // Search Rajesh AND Kumar  in key fields multi_match
-			"root.node.key = 'A?c*fg'", // LIKE
-			"root.node.sub.key != 'A?c*fg'", // NOT LIKE
-			"key = (value1, value2, value3)", // IN
-			"root.key != (value1, value2, value3)", // NOT IN
-			"root.node.key >= toDate('2018-08-15 13:20:30')", // Default format: yyyy-MM-dd HH:mm:ss
-			"root.node.key >= toDate('2018-08-15 13:20:30', 'yyyy-MM-dd HH:mm:ss')",
-			"key = toDate('15/08/2018 13:20:30.000', 'dd/MM/yyyy hh:mm:ss.SSS')",
-			"root.node.key = value OR root.node.key1 = value",
-			"key = value AND key = value",
-			"key = value AND (root.node.key1 = value1 OR key2 = value2)",
-			"(root.node.key1 = value1 OR key2 = value2) AND (root.node.key3 = value3 OR key4 = value4)",
-			"key.length > 10"
+			"Rajesh", // Full text search in all fields- { "query_string": { "query": "abc" } } or { "match": { "_all": "abc" } }
+			"has onRoll", // Check if field exists
+			"gender = 'F'",
+			"age > 10",
+			"salary < 2500",
+			"age != 40",
+			"address.pin >= 302030",
+			"address.pin <= 302030",
+			"name regex('^R.*esh')",
+			"onRoll isNull",
+			"address.street isEmpty",
+			"onRoll isNotNull",
+			"address.street isNotEmpty",
+			"*ame Raj", // Search value in key fields with wildcard key name
+			"[name, fatherName] +\"Rajesh\"", // Search Rajesh AND Kumar  in key fields multi_match
+			"name = 'R?j*'", // Like
+			"address.city != 'J??p*r'", // NOT Like
+			"name = (Rajesh, Rajani, Ram)", // IN
+			"name != (Rajesh, Rajani, Ram)", // NOT IN
+			"doj <= toDate('2018-08-15 13:20:30')", // Default format: yyyy-MM-dd HH:mm:ss
+			"dob >= toDate('2000-01-01 00:00:00', 'yyyy-MM-dd HH:mm:ss')",
+			"doj = toDate('01/09/2009 13:20:30.000', 'dd/MM/yyyy hh:mm:ss.SSS')",
+			"name = Rajesh OR address.city = Jaipur",
+			"name = 'Rajesh Upadhyay' AND fatherName = 'Ramesh Chand Sharma'",
+			"name = Raj AND (gender = M OR gender = F)",
+			"(name = Rajesh OR name = Rajani) AND (gender = M OR onRoll = true)",
+			"gender.length = 1"
 	};
 	private static String[] VALS = {
 			"value", // Full text search in all fields- { "query_string": { "query": "abc" } } or { "match": { "_all": "abc" } }
@@ -65,7 +65,7 @@ public class RuleEngine {
 			"10",
 			"regex('^R.*esh$')",
 			"+\"Rajesh Kumar\"", // Search Rajesh AND Kumar  in key fields multi_match
-			"'A?c*fg'", // LIKE
+			"'A?c*fg'", // Like
 			"(value1, value2, value3)", // IN
 			"toDate('2018-08-15 13:20:30')", // Default format: yyyy-MM-dd HH:mm:ss
 			"toDate('2018-08-15 13:20:30', 'yyyy-MM-dd HH:mm:ss')"
@@ -84,7 +84,7 @@ public class RuleEngine {
 
 	static {
 		//Load entities from json file
-		File fJson = new File(RuleEngine.class.getClassLoader().getResource("countries.json").getFile());
+		File fJson = new File(RuleEngine.class.getClassLoader().getResource("employees.json").getFile());
 		try (BufferedReader br = new BufferedReader(new FileReader(fJson))) {
 			StringBuilder sb = new StringBuilder();
 			String line = null;
@@ -125,8 +125,10 @@ public class RuleEngine {
 		}
 		// Execute the expressions to generate result.
 		for (Expression exp : lstExps) {
+			logger.info("Exp: " + exp);
 			for (JSONObject entity : listEntities) {
 				EvalPolicyRuleResult result = evaluateExpressionForEntity(exp, entity);
+				logger.info("Res: " + result);
 			}
 		}
 	}

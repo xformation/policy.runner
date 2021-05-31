@@ -2,8 +2,8 @@ package com.synectiks.policy.runner.utils;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -548,16 +548,16 @@ public interface IUtilities {
 	static String getESOperatorKey(Keywords op) {
 		String key = null;
 		switch(op) {
-		case GT:
+		case GreaterThan:
 			key  = "gt";
 			break;
-		case GTE:
+		case GreaterThanEquals:
 			key = "gte";
 			break;
-		case LT:
+		case LessThan:
 			key = "lt";
 			break;
-		case LTE:
+		case LessThanEquals:
 			key = "lte";
 			break;
 		default:
@@ -574,7 +574,7 @@ public interface IUtilities {
 	 * @return
 	 */
 	static boolean isInQuery(Keywords op, Keywords grpOp) {
-		if ((op == Keywords.EQ || op == Keywords.NE) &&
+		if ((op == Keywords.Equals || op == Keywords.NotEquals) &&
 				grpOp == Keywords.SmlBrkt) {
 			return true;
 		}
@@ -974,26 +974,25 @@ public interface IUtilities {
 	 */
 	static boolean evalOperator(Object keyVal, String operator, Object value) {
 		if (!IUtils.isNullOrEmpty(operator)) {
-			CTypes tp = null;
+			CTypes tp = IUtils.getValueClassType(value);
+			if (IUtils.isNull(tp)) {
+				tp = CTypes.String;
+			}
 			switch(operator) {
 			case "<":
-				tp = IUtils.getValueClassType(value);
 				return compareLessThan(tp, keyVal, value);
 			case ">":
-				tp = IUtils.getValueClassType(value);
 				return compareGreaterThan(tp, keyVal, value);
 			case "=":
-				tp = IUtils.getValueClassType(value);
 				return compareEquals(tp, keyVal, value);
 			case "<=":
-				tp = IUtils.getValueClassType(value);
 				return compareLessThanEqual(tp, keyVal, value);
 			case ">=":
-				tp = IUtils.getValueClassType(value);
 				return compareGreaterThanEqual(tp, keyVal, value);
 			case "!=":
-				tp = IUtils.getValueClassType(value);
 				return compareNotEquals(tp, keyVal, value);
+			default:
+				IUtils.logger.warn("Unsupported operator: '" + operator + "'");
 			}
 		}
 		return false;
@@ -1008,10 +1007,10 @@ public interface IUtilities {
 	static boolean compareLessThan(CTypes tp, Object keyVal, Object value) {
 		switch(tp) {
 		case Double:
-			return (((Double) keyVal) < ((Double) value));
+			return (getDoubleVal(keyVal) < getDoubleVal(value));
 		case Long:
 		case Integer:
-			return (((Integer) keyVal) < ((Integer) value));
+			return (getLongVal(keyVal) < getLongVal(value));
 		default:
 			break;
 		}
@@ -1027,10 +1026,10 @@ public interface IUtilities {
 	static boolean compareGreaterThan(CTypes tp, Object keyVal, Object value) {
 		switch(tp) {
 		case Double:
-			return (((Double) keyVal) > ((Double) value));
+			return (getDoubleVal(keyVal) > getDoubleVal(value));
 		case Long:
 		case Integer:
-			return (((Integer) keyVal) > ((Integer) value));
+			return (getLongVal(keyVal) > getLongVal(value));
 		default:
 			break;
 		}
@@ -1046,10 +1045,10 @@ public interface IUtilities {
 	static boolean compareLessThanEqual(CTypes tp, Object keyVal, Object value) {
 		switch(tp) {
 		case Double:
-			return (((Double) keyVal) <= ((Double) value));
+			return (getDoubleVal(keyVal) <= getDoubleVal(value));
 		case Long:
 		case Integer:
-			return (((Integer) keyVal) <= ((Integer) value));
+			return (getLongVal(keyVal) <= getLongVal(value));
 		default:
 			break;
 		}
@@ -1065,10 +1064,10 @@ public interface IUtilities {
 	static boolean compareGreaterThanEqual(CTypes tp, Object keyVal, Object value) {
 		switch(tp) {
 		case Double:
-			return (((Double) keyVal) >= ((Double) value));
+			return (getDoubleVal(keyVal) >= getDoubleVal(value));
 		case Long:
 		case Integer:
-			return (((Integer) keyVal) >= ((Integer) value));
+			return (getLongVal(keyVal) >= getLongVal(value));
 		default:
 			break;
 		}
@@ -1084,10 +1083,10 @@ public interface IUtilities {
 	static boolean compareEquals(CTypes tp, Object keyVal, Object value) {
 		switch(tp) {
 		case Double:
-			return (((Double) keyVal) == ((Double) value));
+			return (getDoubleVal(keyVal) == getDoubleVal(value));
 		case Long:
 		case Integer:
-			return (((Integer) keyVal) == ((Integer) value));
+			return (getLongVal(keyVal) == getLongVal(value));
 		case String:
 			if (!IUtils.isNull(keyVal)) {
 				return ((String) keyVal).equals(value);
@@ -1100,6 +1099,38 @@ public interface IUtilities {
 	}
 
 	/**
+	 * Parse value as double
+	 * @param value
+	 * @return
+	 */
+	static Double getDoubleVal(Object value) {
+		if (!IUtils.isNull(value)) {
+			try {
+				return Double.valueOf((String) value);
+			} catch(Throwable th) {
+				// ignore it.
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Parse value as long
+	 * @param value
+	 * @return
+	 */
+	static Long getLongVal(Object value) {
+		if (!IUtils.isNull(value)) {
+			try {
+				return Long.valueOf((String) value);
+			} catch(Throwable th) {
+				// ignore it.
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Method to compare value is NOT equals to keyval, base on class type
 	 * @param tp
 	 * @param keyVal
@@ -1108,10 +1139,10 @@ public interface IUtilities {
 	static boolean compareNotEquals(CTypes tp, Object keyVal, Object value) {
 		switch(tp) {
 		case Double:
-			return (((Double) keyVal) != ((Double) value));
+			return (getDoubleVal(keyVal) != getDoubleVal(value));
 		case Long:
 		case Integer:
-			return (((Integer) keyVal) != ((Integer) value));
+			return (getLongVal(keyVal) != getLongVal(value));
 		case String:
 			if (!IUtils.isNull(keyVal)) {
 				return !((String) keyVal).equals(value);
@@ -1136,5 +1167,44 @@ public interface IUtilities {
 			exists = map.values().contains(value.getVal());
 		}
 		return exists;
+	}
+
+	/**
+	 * Method to get value of specified key to be sure 
+	 * @param entity
+	 * @param key
+	 * @param nested
+	 * @return
+	 */
+	static Object getValueOfKey(JSONObject entity, String key, boolean nested) {
+		Object val = null;
+		if (nested) {
+			JSONObject jobj = entity;
+			List<String> lst = IUtils.getListFromString(key, null);
+			for (int i = 0; i < (lst.size() - 1); i ++) {
+				jobj = jobj.optJSONObject(lst.get(i));
+			}
+			val = jobj.opt(lst.get(lst.size() - 1));
+		} else {
+			val = entity.opt(key);
+		}
+		return val;
+	}
+
+	/**
+	 * Method to get long time for toDate method.
+	 * @param val
+	 * @param format
+	 * @return
+	 */
+	static long getLongTime(String val, String format) {
+		Long lngDt = null;
+		if (!IUtils.isNullOrEmpty(val)) {
+			Date dt = IUtils.parseDate(val, null, format);
+			if (!IUtils.isNull(dt)) {
+				lngDt = dt.getTime();
+			}
+		}
+		return lngDt;
 	}
 }

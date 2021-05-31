@@ -154,7 +154,6 @@ public class Expression implements Serializable {
 			boolean has = false, fts = false;
 			List<Expression> andExp = null, orExp = null;
 			// Check if we have not null input expression.
-			
 			logger.debug("Input: " + in);
 			if (IUtilities.isStartWithConjuction(in)) {
 				Keywords conj = IUtilities.getConjuncOperator(in);
@@ -325,27 +324,276 @@ public class Expression implements Serializable {
 		if (isFullText) {
 			if (IUtilities.evalFullText(this.value, entity)) {
 				isPass = true;
-				msgs.append(msgs.length() > 0 ? " \n" : "Value found in entity.");
+				msgs.append(msgs.length() > 0 ? " \n" :
+					"'" + value.getVal() + "' found in entity.");
 			} else {
-				msgs.append(msgs.length() > 0 ? " \n" : "Value doesn't exists in entity.");
+				msgs.append(msgs.length() > 0 ? " \n" :
+					"'" + value.getVal() + "' doesn't exists in entity.");
 			}
 		} else if (isExists) {
 			if (entity.has(key.getKey())) {
 				isPass = true;
-				msgs.append(msgs.length() > 0 ? " \n" : "Key exists in entity.");
+				msgs.append(msgs.length() > 0 ? " \n" :
+					"'" + key.getKey() + "' exists in entity.");
 			} else {
-				msgs.append(msgs.length() > 0 ? " \n" : "Key doesn't exists in entity.");
+				msgs.append(msgs.length() > 0 ? " \n" :
+					"'" + key.getKey() + "' doesn't exists in entity.");
 			}
 		} else {
 			if (!IUtils.isNull(this.function)) {
-				
+				isPass = processFunction(entity, msgs);
+			} else if (!IUtils.isNull(this.operator)) {
+				isPass = processOperators(entity, msgs);
+			} else { // These are contains queries.
+				List<String> lks = new ArrayList<>();
+				if (!IUtils.isNull(key)) {
+					if (this.key.isMulti()) {
+						key.getKeys().forEach((itm) -> {
+							lks.add(itm.getKey());
+						});
+					} else {
+						lks.add(key.getKey());
+					}
+				}
+				isPass = evalContainsQry(entity, lks);
 			}
-			msgs.append(msgs.length() > 0 ? " \n" : "");
+			//msgs.append(msgs.length() > 0 ? " \n" : "");
 		}
-		
 		// Final evaluation to check expression is success.
 		suc = isAnd ? (suc && isPass) : (suc || isPass);
 		return suc;
+	}
+
+	/**
+	 * Method to evaluate if the entity contains value.
+	 * @param entity
+	 * @param lks list of keys to check, empty to check all keys.
+	 * @return
+	 */
+	private boolean evalContainsQry(JSONObject entity, List<String> lks) {
+		if (lks.isEmpty()) {
+			lks = IUtils.getJsonKeys(entity);
+		}
+		boolean res = false;
+		if (!IUtils.isNull(lks)) {
+			for (String k : lks) {
+				res = res || evalContains(entity, k);
+			}
+		}
+		return res;
+	}
+
+	/**
+	 * Method to evaluate if key in entity contains value
+	 * @param entity
+	 * @param k
+	 * @return
+	 */
+	private boolean evalContains(JSONObject entity, String k) {
+		if (!IUtils.isNullOrEmpty(k)) {
+			Object val = IUtilities.getValueOfKey(entity, k, k.contains("."));
+			if (!IUtils.isNull(val) && !IUtils.isNull(this.value)) {
+				return ((String) val).toLowerCase().contains(
+						this.value.getVal().toLowerCase());
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Method to process opertor's queries.
+	 * @param entity
+	 * @param msgs
+	 * @return
+	 */
+	private boolean processOperators(JSONObject entity, StringBuilder msgs) {
+		boolean isPass = false;
+		switch (this.operator) {
+		case Equals:
+		case NotEquals:
+		case GreaterThan:
+		case LessThan:
+		case GreaterThanEquals:
+		case LessThanEquals:
+		case IN:
+		case Like:
+		case NotIN:
+		case NotLike:
+			isPass = chkAndEvalOperator(entity, msgs, this.operator.isNegativeOprtr());
+			break;
+		default:
+			logger.warn("Unsupported operator: '" + this.operator.name() + "'");
+			break;
+		}
+		return isPass;
+	}
+
+	/**
+	 * Method to check if the value is equals or not equals.
+	 * @param entity
+	 * @param msgs
+	 * @param isNeg
+	 * @return
+	 */
+	private boolean chkAndEvalOperator(JSONObject entity, StringBuilder msgs, boolean isNeg) {
+		boolean isPass = false;
+		if (this.key.isMulti()) {
+			for (Key k : key.getKeys()) {
+				boolean res = compareKeyVal(entity, k, Keywords.Equals);
+				msgs.append(msgs.length() > 0 ? " \n" : "");
+				msgs.append("'" + k.getKey() + "' " +
+						((!res || isNeg) ? " NOT" : "") + this.operator.name() + " .");
+			}
+		} else {
+			boolean res = compareKeyVal(entity, key, Keywords.Equals);
+			msgs.append(msgs.length() > 0 ? " \n" : "");
+			msgs.append("'" + key.getKey() + "' " +
+					((!res || isNeg) ? " NOT" : "") + this.operator.name() + " .");
+		}
+		if (isNeg) {
+			isPass = !isPass;
+		}
+		return isPass;
+	}
+
+	/**
+	 * Method to compare the input value with key value of entity.
+	 * @param entity
+	 * @param k
+	 * @param op
+	 * @return
+	 */
+	private boolean compareKeyVal(JSONObject entity, Key k, Keywords op) {
+		boolean res = false;
+		if (k.isWildcard()) {
+			List<String> ks = IUtils.listMatchingKeys(entity, k.getKey());
+			for (String it : ks) {
+				Object v = IUtilities.getValueOfKey(entity, it, k.isNested());
+				if (k.isLenCheck()) {
+					v = (!IUtils.isNull(v)) ? String.valueOf(v).length() : 0;
+				}
+				res = res || compareValues(v, op.getKey());
+			}
+		} else {
+			Object v = IUtilities.getValueOfKey(entity, key.getKey(), k.isNested());
+			if (k.isLenCheck()) {
+				v = (!IUtils.isNull(v)) ? String.valueOf(v).length() : 0;
+			}
+			res = compareValues(v, op.getKey());
+		}
+		return res;
+	}
+
+	/**
+	 * Method to compare key and input values as par operators.
+	 * @param val
+	 * @param op
+	 * @return
+	 */
+	private boolean compareValues(Object val, String op) {
+		boolean res = false;
+		if (this.value.isMulti()) {
+			for (Value v : this.value.getVals()) {
+				res = res || IUtilities.evalOperator(v.getVal(), op, val);
+			}
+		} else if (this.value.isWildcard()) {
+			res = IUtilities.evalOperator(this.value.getVal(), op, val);
+		} else if (!IUtils.isNull(this.value.getFunction())) {
+			long dtTime = IUtilities.getLongTime((String) val, this.value.getFormat());
+			res = IUtilities.evalOperator(this.value.getDateValue(), op, dtTime);
+		} else {
+			res = IUtilities.evalOperator(this.value.getVal(), op, val);
+		}
+		return res;
+	}
+
+	/**
+	 * Method to process functions
+	 * @param entity
+	 * @param msgs
+	 * @return
+	 */
+	private boolean processFunction(JSONObject entity, StringBuilder msgs) {
+		boolean isPass = false;
+		switch(this.function) {
+		case ISNULL:
+		case ISEMPTY:
+			isPass = evalIsNullOrEmpty(entity);
+			msgs.append(msgs.length() > 0 ? " \n" :
+				"'" + key.getKey() + "' " + (isPass ? "" : " NOT ") +
+				this.function.getKey() + ".");
+			break;
+		case ISNOTNULL:
+		case ISNOTEMPTY:
+			isPass = evalIsNotNullOrEmpty(entity);
+			msgs.append(msgs.length() > 0 ? " \n" :
+				"'" + key.getKey() + "' " + (isPass ? this.function.getKey() :
+					this.function.getKey().replace("Not", "")) + ".");
+			break;
+		case REGEX:
+			isPass = evalRegex(entity);
+			msgs.append(msgs.length() > 0 ? " \n" :
+				"'" + key.getKey() + "' " + (isPass ? "" : " NOT ") +
+				" match for regex '" + this.value.getVal() + "'.");
+			break;
+		case TODATE:
+			// Ignore it, we will take care of it in operators
+			break;
+		default:
+			msgs.append(msgs.length() > 0 ? " \n" :
+				"Unsupported function '" + this.function.getKey() + "'.");
+			break;
+		}
+		return isPass;
+	}
+
+	/**
+	 * Method to check if key's value match with given reges.
+	 * @param entity
+	 * @return
+	 */
+	private boolean evalRegex(JSONObject entity) {
+		boolean res = false;
+		if (!IUtils.isNull(entity) && entity.has(key.getKey())) {
+			String val = (String) IUtilities.getValueOfKey(
+					entity, key.getKey(), key.isNested());
+			if (!IUtils.isNullOrEmpty(val) && !IUtils.isNull(value.getVal())) {
+				res = val.matches(value.getVal());
+			}
+		}
+		return res;
+	}
+
+	/**
+	 * Method to check if entity has null or empty value for key
+	 * @param entity
+	 * @return 
+	 */
+	private boolean evalIsNullOrEmpty(JSONObject entity) {
+		boolean isEmpty = true;
+		if (!IUtils.isNull(key) && !IUtils.isNullOrEmpty(key.getKey())) {
+			Object vl = IUtilities.getValueOfKey(entity, key.getKey(), key.isNested());
+			if (!IUtils.isNullOrEmpty(String.valueOf(vl))) {
+				return false;
+			}
+		}
+		return isEmpty;
+	}
+
+	/**
+	 * Method to check if entity has null or empty value for key
+	 * @param entity
+	 * @return 
+	 */
+	private boolean evalIsNotNullOrEmpty(JSONObject entity) {
+		boolean isEmpty = false;
+		if (!IUtils.isNull(key) && !IUtils.isNullOrEmpty(key.getKey())) {
+			Object vl = IUtilities.getValueOfKey(entity, key.getKey(), key.isNested());
+			if (!IUtils.isNullOrEmpty(String.valueOf(vl))) {
+				return true;
+			}
+		}
+		return isEmpty;
 	}
 
 	/**
@@ -356,7 +604,7 @@ public class Expression implements Serializable {
 	 */
 	private boolean evalOrExpr(JSONObject entity, StringBuilder msgs) {
 		boolean isSuc = false;
-		for (Expression expr : this.andExpressions) {
+		for (Expression expr : this.orExpressions) {
 			if (expr.evaluate(entity, msgs)) {
 				isSuc = true;
 			}

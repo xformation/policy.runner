@@ -133,7 +133,7 @@ public class QueryParser implements IConstants {
 					exprs = IUtilities.createQuery(MATCH, _All, qry);
 				} else {
 					exprs = IUtils.getJSONObject(
-							EvalCheck.create("*", Keywords.EQ, qry).toString());
+							EvalCheck.create("*", Keywords.Equals, qry).toString());
 				}
 				// we have processed whole qry text so set it empty.
 				qry = IConsts.EMPTY;
@@ -276,14 +276,14 @@ public class QueryParser implements IConstants {
 					key, operator, value, isNum, isGrp);
 			JSONObject json = null;
 			switch (operator) {
-			case EQ:
-			case GT:
-			case GTE:
-			case LT:
-			case LTE:
+			case Equals:
+			case GreaterThan:
+			case GreaterThanEquals:
+			case LessThan:
+			case LessThanEquals:
 				json = createOperatorQuery(operator, key, value, func, isNum, isGrp);
 				break;
-			case NE:
+			case NotEquals:
 				json = createOperatorQuery(operator, key, value, func, isNum, isGrp);
 				try {
 					json.put(IConstants.NOT_QRY, true);
@@ -349,7 +349,7 @@ public class QueryParser implements IConstants {
 	private JSONObject createNumberQuery(
 			Keywords op, String key, String value, boolean isGrp) {
 		JSONObject json = null;
-		if (op == Keywords.EQ || op == Keywords.NE) {
+		if (op == Keywords.Equals || op == Keywords.NotEquals) {
 			Object num = null;
 			if (isGrp) {
 				// It will be a IN query
@@ -420,7 +420,7 @@ public class QueryParser implements IConstants {
 	private JSONObject createDateQuery(
 			String key, String value, String format, Date date, Keywords op) {
 		JSONObject json = null;
-		if (op == Keywords.EQ || op == Keywords.NE) {
+		if (op == Keywords.Equals || op == Keywords.NotEquals) {
 			if (!IUtils.isNull(date)) {
 				json = IUtilities.createQuery(IConstants.MATCH, key, date.getTime());
 			} else {

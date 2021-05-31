@@ -104,6 +104,13 @@ public class Value implements Serializable {
 		return isWildcard;
 	}
 
+	public Long getDateValue() {
+		if (!IUtils.isNull(function) && Keywords.TODATE == function) {
+			return IUtilities.getLongTime(val, format);
+		}
+		return null;
+	}
+
 	/**
 	 * Method to extract query value from input string.
 	 * @param in

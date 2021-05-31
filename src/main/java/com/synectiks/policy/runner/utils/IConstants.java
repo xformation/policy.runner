@@ -134,26 +134,26 @@ public interface IConstants {
 		MUST("+", KWTypes.KEYWORD,
 				"We can use + before any value to make it must match. i.e.<i>key = +\"Rajesh Kumar\"</i>"),
 		// Operators
-		EQ("=", KWTypes.OPERATOR,
+		Equals("=", KWTypes.OPERATOR,
 				"Equals operator to make a value in key. i.e. <i>key = value</i>",
 				DataTypes.values()),
-		GT(">", KWTypes.OPERATOR,
+		GreaterThan(">", KWTypes.OPERATOR,
 				"Greater than operator to find rows which key has more value than specified value."
 				+ " i.e. <i>key > value</i>",
 				DataTypes.INT, DataTypes.LONG, DataTypes.DOUBLE, DataTypes.DATE),
-		GTE(">=", KWTypes.OPERATOR,
+		GreaterThanEquals(">=", KWTypes.OPERATOR,
 				"Greater than equal to operator to find rows which key has more or equal "
 				+ "value than specified value. i.e. <i>key >= value</i>",
 				DataTypes.INT, DataTypes.LONG, DataTypes.DOUBLE, DataTypes.DATE),
-		LT("<", KWTypes.OPERATOR,
+		LessThan("<", KWTypes.OPERATOR,
 				"Less than operator to find rows which key has less value than specified value."
 				+ " i.e. <i>key < value</i>",
 				DataTypes.INT, DataTypes.LONG, DataTypes.DOUBLE, DataTypes.DATE),
-		LTE("<=", KWTypes.OPERATOR,
+		LessThanEquals("<=", KWTypes.OPERATOR,
 				"Less than equal to operator to find rows which key has less or equal "
 				+ "value than specified value. i.e. <i>key <= value</i>",
 				DataTypes.INT, DataTypes.LONG, DataTypes.DOUBLE, DataTypes.DATE),
-		NE("!=", KWTypes.OPERATOR,
+		NotEquals("!=", KWTypes.OPERATOR,
 				"Not equal to operator to find rows which key has not equal "
 				+ "value than specified value. i.e. <i>key != value</i>",
 				DataTypes.INT, DataTypes.LONG, DataTypes.DOUBLE, DataTypes.DATE),
@@ -165,7 +165,7 @@ public interface IConstants {
 				"NOT IN operator not to match multiple values in a key(s). "
 				+ "i.e. <i>key != (value1, value2, value3)</i>",
 				DataTypes.INT, DataTypes.LONG, DataTypes.DOUBLE, DataTypes.DATE, DataTypes.TEXT),
-		LIKE("= &#39;x?y*z&#39;", KWTypes.OPERATOR,
+		Like("= &#39;x?y*z&#39;", KWTypes.OPERATOR,
 				"This is sort of wildcard query where we can use ? and * to match values.",
 				DataTypes.TEXT),
 		NotLike("!= &#39;x?y*z&#39;", KWTypes.OPERATOR,
@@ -259,6 +259,16 @@ public interface IConstants {
 		public boolean isRangeOperator() {
 			if (type == KWTypes.OPERATOR) {
 				if (!key.equals("=") && !key.equals("!=")) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public boolean isNegativeOprtr() {
+			if (this.isOperator()) {
+				if (Keywords.NotEquals == this || Keywords.NotIN == this
+						|| Keywords.NotLike == this) {
 					return true;
 				}
 			}

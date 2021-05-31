@@ -1,0 +1,45 @@
+[
+  {
+    "id": 10010011,
+    "name": "Rajesh Upadhyay",
+    "fatherName": "Ramesh Chand Sharma",
+    "gender": "M",
+    "dob": "1981-23-05 21:30:00",
+    "doj": "2009-09-01 00:00:00",
+    "onRoll": true,
+    "age": 40,
+    "salary": 5000.0,
+    "mobile": 9414795988,
+    "address": {
+      "homeNo": "163/156",
+      "landmark": "Kumbha Marg",
+      "street": "RHB",
+      "area": "Pratap Nagar, Sanganer",
+      "city": "Jaipur",
+      "state": "Rajasthan",
+      "country": "India",
+      "pin": 302033
+    }
+  },
+  {
+    "id": 10010012,
+    "name": "Rajani Singh",
+    "fatherName": "Ram Singh",
+    "gender": "F",
+    "dob": "1999-10-02 15:15:00",
+    "doj": "2020-01-10 00:00:00",
+    "age": 22,
+    "salary": 1500.0,
+    "mobile": 9785946788,
+    "address": {
+      "homeNo": "101/156",
+      "landmark": "Tonk Road",
+      "street": "",
+      "area": "Pratap Nagar, Sanganer",
+      "city": "Jaipur",
+      "state": "Rajasthan",
+      "country": "India",
+      "pin": 302029
+    }
+  }
+]
