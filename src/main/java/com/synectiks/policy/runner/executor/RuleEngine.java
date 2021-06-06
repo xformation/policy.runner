@@ -39,24 +39,25 @@ public class RuleEngine {
 			"age != 40",
 			"address.pin >= 302030",
 			"address.pin <= 302030",
-			"name regex('^R.*esh')",
+			"name regex('^R.*sh.*')",
 			"onRoll isNull",
 			"address.street isEmpty",
 			"onRoll isNotNull",
 			"address.street isNotEmpty",
 			"*ame Raj", // Search value in key fields with wildcard key name
 			"[name, fatherName] +\"Rajesh\"", // Search Rajesh AND Kumar  in key fields multi_match
-			"name = 'R?j*'", // Like
-			"address.city != 'J??p*r'", // NOT Like
+			"name = 'R.j.*'", // Like
+			"address.city != 'J..p.*r'", // NOT Like
 			"name = (Rajesh, Rajani, Ram)", // IN
 			"name != (Rajesh, Rajani, Ram)", // NOT IN
 			"doj <= toDate('2018-08-15 13:20:30')", // Default format: yyyy-MM-dd HH:mm:ss
-			"dob >= toDate('2000-01-01 00:00:00', 'yyyy-MM-dd HH:mm:ss')",
-			"doj = toDate('01/09/2009 13:20:30.000', 'dd/MM/yyyy hh:mm:ss.SSS')",
+			"dob >= toDate('1999-01-01 00:00:00', 'yyyy-MM-dd HH:mm:ss')",
+			"doj = toDate('01/09/2009 00:00:00.000', 'dd/MM/yyyy hh:mm:ss.SSS')",
 			"name = Rajesh OR address.city = Jaipur",
 			"name = 'Rajesh Upadhyay' AND fatherName = 'Ramesh Chand Sharma'",
 			"name = Raj AND (gender = M OR gender = F)",
 			"(name = Rajesh OR name = Rajani) AND (gender = M OR onRoll = true)",
+			"onRoll = true",
 			"gender.length = 1"
 	};
 	private static String[] VALS = {

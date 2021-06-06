@@ -157,18 +157,18 @@ public interface IConstants {
 				"Not equal to operator to find rows which key has not equal "
 				+ "value than specified value. i.e. <i>key != value</i>",
 				DataTypes.INT, DataTypes.LONG, DataTypes.DOUBLE, DataTypes.DATE),
-		IN("= ()", KWTypes.OPERATOR,
+		IN("In", KWTypes.OPERATOR,
 				"IN operator to match multiple values in a key(s). "
 				+ "i.e. <i>key = (value1, value2, value3)</i>",
 				DataTypes.INT, DataTypes.LONG, DataTypes.DOUBLE, DataTypes.DATE, DataTypes.TEXT),
-		NotIN("!= ()", KWTypes.OPERATOR,
+		NotIN("NotIn", KWTypes.OPERATOR,
 				"NOT IN operator not to match multiple values in a key(s). "
 				+ "i.e. <i>key != (value1, value2, value3)</i>",
 				DataTypes.INT, DataTypes.LONG, DataTypes.DOUBLE, DataTypes.DATE, DataTypes.TEXT),
-		Like("= &#39;x?y*z&#39;", KWTypes.OPERATOR,
+		Like("like", KWTypes.OPERATOR,
 				"This is sort of wildcard query where we can use ? and * to match values.",
 				DataTypes.TEXT),
-		NotLike("!= &#39;x?y*z&#39;", KWTypes.OPERATOR,
+		NotLike("NotLike", KWTypes.OPERATOR,
 				"This is wildcard query where we can use ? and * to NOT match values.",
 				DataTypes.TEXT),
 		// Wildcards

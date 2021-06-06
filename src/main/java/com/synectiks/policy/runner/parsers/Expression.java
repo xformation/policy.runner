@@ -44,7 +44,6 @@ public class Expression implements Serializable {
 	private Value value;
 
 	private String processedStr;
-	private String msg;
 
 	private Expression() {
 		
@@ -241,7 +240,7 @@ public class Expression implements Serializable {
 			}
 			// finally process value
 			if (!IUtils.isNullOrEmpty(in) && !IUtilities.isStartWithConjuction(in)) {
-				val = Value.parse(in);
+				val = Value.parse(in, func);
 				sb.append(val.getProcessedStr());
 			}
 			// Finally create an Expression object
@@ -273,8 +272,8 @@ public class Expression implements Serializable {
 			builder.append("\"function\": ").append(function).append(", ");
 		if (value != null)
 			builder.append("\"value\": ").append(value).append(", ");
-		if (processedStr != null)
-			builder.append("\"processedStr\": \"").append(processedStr);
+		/*if (processedStr != null)
+			builder.append("\"processedStr\": \"").append(processedStr);*/
 		builder.append("\" }");
 		return builder.toString();
 	}
@@ -320,27 +319,27 @@ public class Expression implements Serializable {
 			suc = suc || isSuc;
 		}
 		// Now evaluate this expression for function operator and other values types.
-		boolean isPass = false;
+		boolean isPass = (isAnd ? suc : false);
 		if (isFullText) {
 			if (IUtilities.evalFullText(this.value, entity)) {
 				isPass = true;
-				msgs.append(msgs.length() > 0 ? " \n" :
-					"'" + value.getVal() + "' found in entity.");
+				msgs.append(msgs.length() > 0 ? ", " : "");
+				msgs.append("'" + value.getVal() + "' found in entity.");
 			} else {
-				msgs.append(msgs.length() > 0 ? " \n" :
-					"'" + value.getVal() + "' doesn't exists in entity.");
+				msgs.append(msgs.length() > 0 ? ", " : "");
+				msgs.append("'" + value.getVal() + "' doesn't exists in entity.");
 			}
 		} else if (isExists) {
 			if (entity.has(key.getKey())) {
 				isPass = true;
-				msgs.append(msgs.length() > 0 ? " \n" :
-					"'" + key.getKey() + "' exists in entity.");
+				msgs.append(msgs.length() > 0 ? ", " : "");
+				msgs.append("'" + key.getKey() + "' exists in entity.");
 			} else {
-				msgs.append(msgs.length() > 0 ? " \n" :
-					"'" + key.getKey() + "' doesn't exists in entity.");
+				msgs.append(msgs.length() > 0 ? ", " : "");
+				msgs.append("'" + key.getKey() + "' doesn't exists in entity.");
 			}
 		} else {
-			if (!IUtils.isNull(this.function)) {
+			if (!IUtils.isNull(this.function) && Keywords.TODATE != this.function) {
 				isPass = processFunction(entity, msgs);
 			} else if (!IUtils.isNull(this.operator)) {
 				isPass = processOperators(entity, msgs);
@@ -354,10 +353,14 @@ public class Expression implements Serializable {
 					} else {
 						lks.add(key.getKey());
 					}
+					isPass = evalContainsQry(entity, lks, msgs);
+				} else {
+					// ignore the expression. if value is also null, may be its AND/OR query
+					if (!IUtils.isNull(this.value)) {
+						isPass = evalContainsQry(entity, lks, msgs);
+					}
 				}
-				isPass = evalContainsQry(entity, lks);
 			}
-			//msgs.append(msgs.length() > 0 ? " \n" : "");
 		}
 		// Final evaluation to check expression is success.
 		suc = isAnd ? (suc && isPass) : (suc || isPass);
@@ -368,17 +371,31 @@ public class Expression implements Serializable {
 	 * Method to evaluate if the entity contains value.
 	 * @param entity
 	 * @param lks list of keys to check, empty to check all keys.
+	 * @param msgs 
 	 * @return
 	 */
-	private boolean evalContainsQry(JSONObject entity, List<String> lks) {
+	private boolean evalContainsQry(JSONObject entity, List<String> lks, StringBuilder msgs) {
 		if (lks.isEmpty()) {
 			lks = IUtils.getJsonKeys(entity);
 		}
 		boolean res = false;
 		if (!IUtils.isNull(lks)) {
+			String keys = "";
 			for (String k : lks) {
-				res = res || evalContains(entity, k);
+				boolean er = evalContains(entity, k);
+				if (er) {
+					keys += (keys.length() > 0 ? ", " : "") + k;
+				}
+				res = res || er;
 			}
+			if (!IUtils.isNullOrEmpty(keys)) {
+				msgs.append(msgs.length() > 0 ? "\n" : "");
+				msgs.append("Match found in keys [" + keys + "].");
+			}
+		}
+		if (!res) {
+			msgs.append(msgs.length() > 0 ? " \n" :
+				"No match found in keys " + lks + ".");
 		}
 		return res;
 	}
@@ -439,19 +456,15 @@ public class Expression implements Serializable {
 		boolean isPass = false;
 		if (this.key.isMulti()) {
 			for (Key k : key.getKeys()) {
-				boolean res = compareKeyVal(entity, k, Keywords.Equals);
-				msgs.append(msgs.length() > 0 ? " \n" : "");
-				msgs.append("'" + k.getKey() + "' " +
-						((!res || isNeg) ? " NOT" : "") + this.operator.name() + " .");
+				boolean res = compareKeyVal(entity, k, this.operator);
+				msgs = IUtilities.setEvalMsg(msgs, k.getKey(), k.isLenCheck(),
+						isPass, isNeg, this.operator.name());
+				isPass = isPass || res;
 			}
 		} else {
-			boolean res = compareKeyVal(entity, key, Keywords.Equals);
-			msgs.append(msgs.length() > 0 ? " \n" : "");
-			msgs.append("'" + key.getKey() + "' " +
-					((!res || isNeg) ? " NOT" : "") + this.operator.name() + " .");
-		}
-		if (isNeg) {
-			isPass = !isPass;
+			isPass = compareKeyVal(entity, key, this.operator);
+			msgs = IUtilities.setEvalMsg(msgs, key.getKey(), key.isLenCheck(),
+					isPass, isNeg, this.operator.name());
 		}
 		return isPass;
 	}
@@ -475,7 +488,7 @@ public class Expression implements Serializable {
 				res = res || compareValues(v, op.getKey());
 			}
 		} else {
-			Object v = IUtilities.getValueOfKey(entity, key.getKey(), k.isNested());
+			Object v = IUtilities.getValueOfKey(entity, k.getKey(), k.isNested());
 			if (k.isLenCheck()) {
 				v = (!IUtils.isNull(v)) ? String.valueOf(v).length() : 0;
 			}
@@ -486,7 +499,7 @@ public class Expression implements Serializable {
 
 	/**
 	 * Method to compare key and input values as par operators.
-	 * @param val
+	 * @param val object value
 	 * @param op
 	 * @return
 	 */
@@ -497,9 +510,12 @@ public class Expression implements Serializable {
 				res = res || IUtilities.evalOperator(v.getVal(), op, val);
 			}
 		} else if (this.value.isWildcard()) {
-			res = IUtilities.evalOperator(this.value.getVal(), op, val);
+			res = IUtilities.evalRegex(this.value.getVal(), String.valueOf(val));
+			if (Keywords.Equals.getKey() != op) {// Its a not like query
+				res = !res;
+			}
 		} else if (!IUtils.isNull(this.value.getFunction())) {
-			long dtTime = IUtilities.getLongTime((String) val, this.value.getFormat());
+			long dtTime = IUtilities.getLongTime((String) val, null);
 			res = IUtilities.evalOperator(this.value.getDateValue(), op, dtTime);
 		} else {
 			res = IUtilities.evalOperator(this.value.getVal(), op, val);
@@ -520,12 +536,12 @@ public class Expression implements Serializable {
 		case ISEMPTY:
 			isPass = evalIsNullOrEmpty(entity);
 			msgs.append(msgs.length() > 0 ? " \n" :
-				"'" + key.getKey() + "' " + (isPass ? "" : " NOT ") +
+				"'" + key.getKey() + "' " + (isPass ? "" : "NOT ") +
 				this.function.getKey() + ".");
 			break;
 		case ISNOTNULL:
 		case ISNOTEMPTY:
-			isPass = evalIsNotNullOrEmpty(entity);
+			isPass = ! evalIsNullOrEmpty(entity);
 			msgs.append(msgs.length() > 0 ? " \n" :
 				"'" + key.getKey() + "' " + (isPass ? this.function.getKey() :
 					this.function.getKey().replace("Not", "")) + ".");
@@ -533,7 +549,7 @@ public class Expression implements Serializable {
 		case REGEX:
 			isPass = evalRegex(entity);
 			msgs.append(msgs.length() > 0 ? " \n" :
-				"'" + key.getKey() + "' " + (isPass ? "" : " NOT ") +
+				"'" + key.getKey() + "' " + (isPass ? "" : "NOT") +
 				" match for regex '" + this.value.getVal() + "'.");
 			break;
 		case TODATE:
@@ -557,9 +573,7 @@ public class Expression implements Serializable {
 		if (!IUtils.isNull(entity) && entity.has(key.getKey())) {
 			String val = (String) IUtilities.getValueOfKey(
 					entity, key.getKey(), key.isNested());
-			if (!IUtils.isNullOrEmpty(val) && !IUtils.isNull(value.getVal())) {
-				res = val.matches(value.getVal());
-			}
+			res = IUtilities.evalRegex(value.getVal(), val);
 		}
 		return res;
 	}
@@ -573,24 +587,8 @@ public class Expression implements Serializable {
 		boolean isEmpty = true;
 		if (!IUtils.isNull(key) && !IUtils.isNullOrEmpty(key.getKey())) {
 			Object vl = IUtilities.getValueOfKey(entity, key.getKey(), key.isNested());
-			if (!IUtils.isNullOrEmpty(String.valueOf(vl))) {
+			if (!IUtils.isNull(vl) && !IUtils.isNullOrEmpty(String.valueOf(vl))) {
 				return false;
-			}
-		}
-		return isEmpty;
-	}
-
-	/**
-	 * Method to check if entity has null or empty value for key
-	 * @param entity
-	 * @return 
-	 */
-	private boolean evalIsNotNullOrEmpty(JSONObject entity) {
-		boolean isEmpty = false;
-		if (!IUtils.isNull(key) && !IUtils.isNullOrEmpty(key.getKey())) {
-			Object vl = IUtilities.getValueOfKey(entity, key.getKey(), key.isNested());
-			if (!IUtils.isNullOrEmpty(String.valueOf(vl))) {
-				return true;
 			}
 		}
 		return isEmpty;
@@ -608,7 +606,6 @@ public class Expression implements Serializable {
 			if (expr.evaluate(entity, msgs)) {
 				isSuc = true;
 			}
-			msgs.append(msgs.length() > 0 ? " \n" : expr.msg);
 		}
 		return isSuc;
 	}
@@ -620,14 +617,13 @@ public class Expression implements Serializable {
 	 * @return
 	 */
 	private boolean evalAndExpr(JSONObject entity, StringBuilder msgs) {
-		boolean isFailed = false;
+		boolean isSuc = true;
 		for (Expression expr : this.andExpressions) {
 			if (!expr.evaluate(entity, msgs)) {
-				isFailed = true;
+				isSuc = false;
 			}
-			msgs.append(msgs.length() > 0 ? " \n" : expr.msg);
 		}
-		return isFailed;
+		return isSuc;
 	}
 
 }

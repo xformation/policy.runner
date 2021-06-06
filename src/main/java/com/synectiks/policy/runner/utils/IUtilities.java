@@ -975,7 +975,7 @@ public interface IUtilities {
 	static boolean evalOperator(Object keyVal, String operator, Object value) {
 		if (!IUtils.isNullOrEmpty(operator)) {
 			CTypes tp = IUtils.getValueClassType(value);
-			if (IUtils.isNull(tp)) {
+			if (IUtils.isNull(tp) || CTypes.Boolean == tp) {
 				tp = CTypes.String;
 			}
 			switch(operator) {
@@ -1007,10 +1007,10 @@ public interface IUtilities {
 	static boolean compareLessThan(CTypes tp, Object keyVal, Object value) {
 		switch(tp) {
 		case Double:
-			return (getDoubleVal(keyVal) < getDoubleVal(value));
+			return (getDoubleVal(value).doubleValue() < getDoubleVal(keyVal).doubleValue());
 		case Long:
 		case Integer:
-			return (getLongVal(keyVal) < getLongVal(value));
+			return (getLongVal(value).longValue() < getLongVal(keyVal).longValue());
 		default:
 			break;
 		}
@@ -1026,10 +1026,10 @@ public interface IUtilities {
 	static boolean compareGreaterThan(CTypes tp, Object keyVal, Object value) {
 		switch(tp) {
 		case Double:
-			return (getDoubleVal(keyVal) > getDoubleVal(value));
+			return (getDoubleVal(value).doubleValue() > getDoubleVal(keyVal).doubleValue());
 		case Long:
 		case Integer:
-			return (getLongVal(keyVal) > getLongVal(value));
+			return (getLongVal(value).longValue() > getLongVal(keyVal).longValue());
 		default:
 			break;
 		}
@@ -1045,10 +1045,10 @@ public interface IUtilities {
 	static boolean compareLessThanEqual(CTypes tp, Object keyVal, Object value) {
 		switch(tp) {
 		case Double:
-			return (getDoubleVal(keyVal) <= getDoubleVal(value));
+			return (getDoubleVal(value).doubleValue() <= getDoubleVal(keyVal).doubleValue());
 		case Long:
 		case Integer:
-			return (getLongVal(keyVal) <= getLongVal(value));
+			return (getLongVal(value).longValue() <= getLongVal(keyVal).longValue());
 		default:
 			break;
 		}
@@ -1064,10 +1064,10 @@ public interface IUtilities {
 	static boolean compareGreaterThanEqual(CTypes tp, Object keyVal, Object value) {
 		switch(tp) {
 		case Double:
-			return (getDoubleVal(keyVal) >= getDoubleVal(value));
+			return (getDoubleVal(value).doubleValue() >= getDoubleVal(keyVal).doubleValue());
 		case Long:
 		case Integer:
-			return (getLongVal(keyVal) >= getLongVal(value));
+			return (getLongVal(value).longValue() >= getLongVal(keyVal).longValue());
 		default:
 			break;
 		}
@@ -1083,13 +1083,17 @@ public interface IUtilities {
 	static boolean compareEquals(CTypes tp, Object keyVal, Object value) {
 		switch(tp) {
 		case Double:
-			return (getDoubleVal(keyVal) == getDoubleVal(value));
+			return (getDoubleVal(value).doubleValue() == getDoubleVal(keyVal).doubleValue());
 		case Long:
 		case Integer:
-			return (getLongVal(keyVal) == getLongVal(value));
+			return (getLongVal(value).longValue() == getLongVal(keyVal).longValue());
 		case String:
-			if (!IUtils.isNull(keyVal)) {
-				return ((String) keyVal).equals(value);
+			if (!IUtils.isNull(value)) {
+				if (!IUtils.isNull(keyVal)) {
+					return (String.valueOf(value)).contains(String.valueOf(keyVal));
+				} else {
+					return (String.valueOf(value)).equals(keyVal);
+				}
 			}
 			break;
 		default:
@@ -1106,7 +1110,7 @@ public interface IUtilities {
 	static Double getDoubleVal(Object value) {
 		if (!IUtils.isNull(value)) {
 			try {
-				return Double.valueOf((String) value);
+				return Double.valueOf(String.valueOf(value));
 			} catch(Throwable th) {
 				// ignore it.
 			}
@@ -1122,7 +1126,7 @@ public interface IUtilities {
 	static Long getLongVal(Object value) {
 		if (!IUtils.isNull(value)) {
 			try {
-				return Long.valueOf((String) value);
+				return Long.valueOf(String.valueOf(value));
 			} catch(Throwable th) {
 				// ignore it.
 			}
@@ -1139,19 +1143,23 @@ public interface IUtilities {
 	static boolean compareNotEquals(CTypes tp, Object keyVal, Object value) {
 		switch(tp) {
 		case Double:
-			return (getDoubleVal(keyVal) != getDoubleVal(value));
+			return (getDoubleVal(value).doubleValue() != getDoubleVal(keyVal).doubleValue());
 		case Long:
 		case Integer:
-			return (getLongVal(keyVal) != getLongVal(value));
+			return (getLongVal(value).longValue() != getLongVal(keyVal).longValue());
 		case String:
-			if (!IUtils.isNull(keyVal)) {
-				return !((String) keyVal).equals(value);
+			if (!IUtils.isNull(value)) {
+				if (!IUtils.isNull(keyVal)) {
+					return ! (String.valueOf(value)).contains(String.valueOf(keyVal));
+				} else {
+					return ! (String.valueOf(value)).equals(keyVal);
+				}
 			}
 			break;
 		default:
 			break;
 		}
-		return false;
+		return true;
 	}
 
 	/**
@@ -1164,7 +1172,16 @@ public interface IUtilities {
 		boolean exists = false;
 		Map<String, Object> map = IUtils.getMapFromJson(entity);
 		if (!IUtils.isNull(map) && !IUtils.isNull(map.values())) {
-			exists = map.values().contains(value.getVal());
+			//exists = map.values().contains(value.getVal());
+			for (Object val : map.values()) {
+				if (!IUtils.isNull(val)) {
+					String v = String.valueOf(val);
+					if (!IUtils.isNullOrEmpty(v) &&
+							v.contains(value.getVal())) {
+						return true;
+					}
+				}
+			}
 		}
 		return exists;
 	}
@@ -1180,7 +1197,7 @@ public interface IUtilities {
 		Object val = null;
 		if (nested) {
 			JSONObject jobj = entity;
-			List<String> lst = IUtils.getListFromString(key, null);
+			List<String> lst = IUtils.getListFromString(key, ".");
 			for (int i = 0; i < (lst.size() - 1); i ++) {
 				jobj = jobj.optJSONObject(lst.get(i));
 			}
@@ -1206,5 +1223,41 @@ public interface IUtilities {
 			}
 		}
 		return lngDt;
+	}
+
+	/**
+	 * Method to set evaluation message for operators.
+	 * @param msgs
+	 * @param key
+	 * @param isLen
+	 * @param isPass
+	 * @param isNeg
+	 * @param opName
+	 * @return 
+	 */
+	static StringBuilder setEvalMsg(StringBuilder msgs, String key, boolean isLen,
+			boolean isPass, boolean isNeg, String opName) {
+		msgs.append(msgs.length() > 0 ? ", " : "");
+		msgs.append("'" + key + (isLen ? "' length" : "'") + " is ");
+		if (!isPass && isNeg) {
+			msgs.append(opName.replace("Not", ""));
+		} else {
+			msgs.append((isPass ? "" : "NOT ") + opName);
+		}
+		msgs.append(".");
+		return msgs;
+	}
+
+	/**
+	 * Method to evaluate the regex key value for value
+	 * @param kVal
+	 * @param val
+	 * @return
+	 */
+	static boolean evalRegex(String kVal, String val) {
+		if (!IUtils.isNullOrEmpty(val) && !IUtils.isNull(val)) {
+			return val.matches(kVal);
+		}
+		return false;
 	}
 }

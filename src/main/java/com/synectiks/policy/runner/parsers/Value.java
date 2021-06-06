@@ -117,12 +117,21 @@ public class Value implements Serializable {
 	 * @return
 	 */
 	public static Value parse(String in) {
+		return parse(in, null);
+	}
+
+	/**
+	 * Method to extract query value from input string.
+	 * @param in
+	 * @param func
+	 * @return
+	 */
+	public static Value parse(String in, Keywords func) {
 		Value val = null;
 		StringBuilder prcd = new StringBuilder();
 		if (!IUtils.isNullOrEmpty(in)) {
 			String value = null, format = null;
 			DataTypes type = null;
-			Keywords func = null;
 			boolean multi = false, must = false, wildcard = false;
 			// Check if value has any function
 			if (IUtilities.isStartWithFunction(in)) {
@@ -150,15 +159,26 @@ public class Value implements Serializable {
 							if (IUtilities.isStartWithGroup(lst.get(0))) {
 								value = IUtilities.getGroupValue(lst.get(0),
 										IUtilities.getStartWithGroup(lst.get(0)), false);
+							} else {
+								value = lst.get(0);
 							}
 							if (IUtilities.isStartWithGroup(lst.get(1))) {
 								format = IUtilities.getGroupValue(lst.get(1),
 										IUtilities.getStartWithGroup(lst.get(1)), false);
+							} else {
+								value = lst.get(1);
 							}
 						}
+					} else if (Keywords.SmlBrkt == grp) {// date or regex function
+						if (IUtilities.isStartWithGroup(value)) {
+							value = IUtilities.getGroupValue(value,
+									IUtilities.getStartWithGroup(value), false);
+						}
+					}
+					if (Keywords.TODATE == func) {
 						type = DataTypes.DATE;
 					}
-				} else if (Keywords.SmlBrkt == grp) {
+				} else if (Keywords.SmlBrkt == grp) {// multi value case
 					multi = true;
 				}
 			} else {// Get the first string as value
