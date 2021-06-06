@@ -126,6 +126,7 @@ public class RuleEngine {
 		}
 		// Execute the expressions to generate result.
 		for (Expression exp : lstExps) {
+			logger.info("Query: " + QUERIES[(int) (exp.getRuleId() - 1)]);
 			logger.info("Exp: " + exp);
 			for (JSONObject entity : listEntities) {
 				EvalPolicyRuleResult result = evaluateExpressionForEntity(exp, entity);
