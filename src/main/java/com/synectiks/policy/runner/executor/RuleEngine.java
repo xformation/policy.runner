@@ -15,7 +15,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,12 +36,15 @@ public class RuleEngine {
 
 	private static Logger logger = LoggerFactory.getLogger(RuleEngine.class);
 
-	@Autowired
 	private Environment env;
-	@Autowired
 	private RestTemplate rest;
-	@Autowired
 	private RuleRepository ruleRepo;
+
+	public RuleEngine(Environment env, RestTemplate rest, RuleRepository ruleRepo) {
+		this.env = env;
+		this.rest = rest;
+		this.ruleRepo = ruleRepo;
+	}
 
 	private static String[] QUERIES = {
 			"Rajesh", // Full text search in all fields- { "query_string": { "query": "abc" } } or { "match": { "_all": "abc" } }
@@ -306,7 +308,7 @@ public class RuleEngine {
 				if (!IUtils.isNull(lstEntities)) {
 					for (String entity : lstEntities) {
 						for (Expression exp : exprs) {
-							lst.add(exp.evaluate(IUtils.getJSONObject(entity)));
+							lst.add(exp.evaluate(IUtils.getJSONObject(entity), null, cls));
 						}
 					}
 				}
@@ -321,7 +323,7 @@ public class RuleEngine {
 	 * @return
 	 */
 	private List<Expression> getExpressions(Policy policy) {
-		List<Expression> exprs = getExpressions(policy);
+		List<Expression> exprs = new ArrayList<>();
 		for (Long rId : policy.getRules()) {
 			if (!IUtils.isNull(rId) && rId.longValue() > 0) {
 				Optional<Rule> rule = ruleRepo.findById(rId);
@@ -364,7 +366,7 @@ public class RuleEngine {
 		Map<String, Object> params = IUtils.getRestParamMap(prms.toArray());
 		logger.info("Request: " + params);
 		try {
-			lst = IUtils.sendGetRestReq(rest, srchUlr, null, params);
+			lst = IUtils.sendGetRestReq(rest, srchUlr, params);
 			logger.info("Indexing response size: " +
 					(IUtils.isNull(lst) ? "0" : lst.size()));
 		} catch (Exception ex) {

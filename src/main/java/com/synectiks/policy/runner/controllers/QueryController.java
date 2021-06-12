@@ -33,6 +33,7 @@ import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.executor.PolicyExecutor;
 import com.synectiks.policy.runner.executor.RuleEngine;
 import com.synectiks.policy.runner.repositories.PolicyRepository;
+import com.synectiks.policy.runner.repositories.RuleRepository;
 import com.synectiks.policy.runner.translators.QueryParser;
 import com.synectiks.policy.runner.utils.IConstants;
 import com.synectiks.policy.runner.utils.IUtilities;
@@ -49,6 +50,8 @@ public class QueryController {
 
 	@Autowired
 	private PolicyRepository policies;
+	@Autowired
+	private RuleRepository ruleRepo;
 
 	@Autowired
 	private Environment env;
@@ -181,7 +184,7 @@ public class QueryController {
 						json = executor.execute();
 					} else {
 						// Add your logic to execute non searchable query.
-						RuleEngine re = new RuleEngine();
+						RuleEngine re = new RuleEngine(env, rest, ruleRepo);
 						json = re.execute(policy);
 					}
 				} else {
@@ -215,7 +218,7 @@ public class QueryController {
 					throw new Exception("cls/index name is required.");
 				}
 			}
-			RuleEngine re = new RuleEngine();
+			RuleEngine re = new RuleEngine(env, rest, ruleRepo);
 			res = re.execute(qry, cls, index, type);
 		} catch (Throwable th) {
 			logger.error(th.getMessage(), th);

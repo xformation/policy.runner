@@ -284,7 +284,7 @@ public class Expression implements Serializable {
 	 * @return
 	 */
 	public EvalPolicyRuleResult evaluate(JSONObject entity) {
-		return evaluate(entity, "employee", null);
+		return evaluate(entity, null, null);
 	}
 
 	/**
