@@ -34,7 +34,7 @@ public class PolicyExecutor {
 	private static final Logger logger = LoggerFactory.getLogger(PolicyExecutor.class);
 
 	private static final int PG_SIZE = 100;
-	
+
 	@Autowired
 	private Environment env;
 	@Autowired

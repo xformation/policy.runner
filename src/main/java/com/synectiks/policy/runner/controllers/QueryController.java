@@ -28,7 +28,6 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.synectiks.commons.constants.IConsts;
 import com.synectiks.commons.entities.Policy;
-import com.synectiks.commons.entities.PolicyRuleResult;
 import com.synectiks.commons.entities.SourceEntity;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.executor.PolicyExecutor;
@@ -169,9 +168,8 @@ public class QueryController {
 	 */
 	@RequestMapping(path = IConstants.API_EXECUTE, method = RequestMethod.POST)
 	public ResponseEntity<Object> execute(long policyId,
-			@RequestParam(name = "noCache",
-					required = false) boolean noCache) {
-		List<PolicyRuleResult> json = null;
+			@RequestParam(name = "noCache", required = false) boolean noCache) {
+		List<?> json = null;
 		logger.info("Policy to execute: " + policyId);
 		if (policyId > 0) {
 			try {
@@ -184,6 +182,7 @@ public class QueryController {
 					} else {
 						// Add your logic to execute non searchable query.
 						RuleEngine re = new RuleEngine();
+						json = re.execute(policy);
 					}
 				} else {
 					throw new Exception("Policy not found for id: " + policyId);
@@ -195,5 +194,34 @@ public class QueryController {
 			}
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(json);
+	}
+
+	/**
+	 * Api endpoint to execute a query for class or index entities.
+	 * @param qry
+	 * @param cls
+	 * @param index
+	 * @return
+	 */
+	@RequestMapping(path = "/executeQry", method = RequestMethod.POST)
+	public ResponseEntity<Object> executeSynQry(String qry,
+			@RequestParam(required = false) String cls,
+			@RequestParam(required = false) String index,
+			@RequestParam(required = false) String type) {
+		Object res = null;
+		try {
+			if (IUtils.isNullOrEmpty(index)) {
+				if (IUtils.isNullOrEmpty(cls)) {
+					throw new Exception("cls/index name is required.");
+				}
+			}
+			RuleEngine re = new RuleEngine();
+			res = re.execute(qry, cls, index, type);
+		} catch (Throwable th) {
+			logger.error(th.getMessage(), th);
+			return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
+					.body(IUtils.getFailedResponse(th.getMessage()));
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(res);
 	}
 }

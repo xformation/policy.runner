@@ -375,4 +375,8 @@ public interface IConstants {
 	String SET_INDX_MAPPING_URI = "/setIndexMapping";
 	String ELASTIC_QUERY = "/elsQuery";
 	String ELASTIC_LIST = "/list";
+	String ELASTIC_DOCS = "/getDocs";
+	String ELASTIC_INDX_DOCS = "/searchWithIndexAndType";
+	String PRM_INDEX = "index";
+	String PRM_TYPE = "type";
 }
