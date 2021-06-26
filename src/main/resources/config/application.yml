@@ -173,6 +173,7 @@ jhipster:
 synectiks:
   search:
     url: http://localhost:8092
+    savedocs: /saveDocs
   states:
     file: statesJsonDef.json
   customer:

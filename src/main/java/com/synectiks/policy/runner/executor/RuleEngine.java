@@ -7,10 +7,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.http.client.utils.DateUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
@@ -39,11 +41,31 @@ public class RuleEngine {
 	private Environment env;
 	private RestTemplate rest;
 	private RuleRepository ruleRepo;
+	private String rsltIndxName;
+
+	private boolean saveRes;
 
 	public RuleEngine(Environment env, RestTemplate rest, RuleRepository ruleRepo) {
+		this(env, rest, ruleRepo, false);
+	}
+
+	public RuleEngine(Environment env, RestTemplate rest, RuleRepository ruleRepo,
+			boolean saveRes) {
 		this.env = env;
 		this.rest = rest;
 		this.ruleRepo = ruleRepo;
+		this.saveRes = saveRes;
+	}
+
+	/**
+	 * Method to return result index name with execution time.
+	 * @return
+	 */
+	public void setRsltIndxName(String index) {
+		if (!IUtils.isNullOrEmpty(rsltIndxName)) {
+			this.rsltIndxName = index + "_" + DateUtils.formatDate(
+					new Date(), IConsts.PLAIN_DATE_FORMAT);
+		}
 	}
 
 	private static String[] QUERIES = {
@@ -311,6 +333,10 @@ public class RuleEngine {
 							lst.add(exp.evaluate(IUtils.getJSONObject(entity), null, cls));
 						}
 					}
+					// If we are going to save result then we will get result doc ids
+					if (saveRes) {
+						return saveResult(lst);
+					}
 				}
 			}
 		}
@@ -354,10 +380,12 @@ public class RuleEngine {
 		if (!IUtils.isNull(cls)) {
 			prms.add(IConsts.PRM_CLASS);
 			prms.add(cls);
+			this.setRsltIndxName(cls.substring(cls.lastIndexOf(".") + 1));
 		}
 		if (!IUtils.isNull(index)) {
 			prms.add(IConstants.PRM_INDEX);
 			prms.add(index);
+			this.setRsltIndxName(index);
 		}
 		if (!IUtils.isNull(type)) {
 			prms.add(IConstants.PRM_TYPE);
@@ -395,9 +423,39 @@ public class RuleEngine {
 							index, cls));
 				}
 			}
+			// If we are going to save result then we will get result doc ids
+			if (saveRes) {
+				return saveResult(lst);
+			}
 			return lst;
 		}
 		return null;
+	}
+
+	/**
+	 * Method to save evaluation result.
+	 * @param lst
+	 * @return 
+	 */
+	private List<String> saveResult(List<EvalPolicyRuleResult> lst) {
+		List<String> res = null;
+		if (saveRes && !IUtils.isNull(lst) && lst.size() > 0 &&
+			!IUtils.isNullOrEmpty(rsltIndxName)) {
+			String url = IUtilities.getSearchUrl(env,
+					env.getProperty(IConsts.KEY_SEARCH_SAVE_DOCS));
+			Map<String, String> headers = IUtils.getRestParamMap(
+					IConsts.PRM_INDX_NAME, rsltIndxName);
+			try {
+				Object ret = IUtils.sendPostJsonDataReq(url, headers, lst.toString());
+				res = IUtils.getListFromJsonString(String.valueOf(ret));
+				if (!IUtils.isNull(res)) {
+					res.add(0, rsltIndxName);
+				}
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+			}
+		}
+		return res;
 	}
 
 }

@@ -184,7 +184,7 @@ public class QueryController {
 						json = executor.execute();
 					} else {
 						// Add your logic to execute non searchable query.
-						RuleEngine re = new RuleEngine(env, rest, ruleRepo);
+						RuleEngine re = new RuleEngine(env, rest, ruleRepo, !noCache);
 						json = re.execute(policy);
 					}
 				} else {
