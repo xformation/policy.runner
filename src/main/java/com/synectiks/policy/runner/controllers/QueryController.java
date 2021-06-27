@@ -218,7 +218,7 @@ public class QueryController {
 					throw new Exception("cls/index name is required.");
 				}
 			}
-			RuleEngine re = new RuleEngine(env, rest, ruleRepo);
+			RuleEngine re = new RuleEngine(env, rest, ruleRepo, true);
 			res = re.execute(qry, cls, index, type);
 		} catch (Throwable th) {
 			logger.error(th.getMessage(), th);

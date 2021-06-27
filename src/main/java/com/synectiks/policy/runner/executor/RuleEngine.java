@@ -61,8 +61,8 @@ public class RuleEngine {
 	 * Method to return result index name with execution time.
 	 * @return
 	 */
-	public void setRsltIndxName(String index) {
-		if (!IUtils.isNullOrEmpty(rsltIndxName)) {
+	private void setRsltIndxName(String index) {
+		if (!IUtils.isNullOrEmpty(index)) {
 			this.rsltIndxName = index + "_" + DateUtils.formatDate(
 					new Date(), IConsts.PLAIN_DATE_FORMAT);
 		}
@@ -443,12 +443,13 @@ public class RuleEngine {
 			!IUtils.isNullOrEmpty(rsltIndxName)) {
 			String url = IUtilities.getSearchUrl(env,
 					env.getProperty(IConsts.KEY_SEARCH_SAVE_DOCS));
+			logger.info("Url: " + url);
 			Map<String, String> headers = IUtils.getRestParamMap(
 					IConsts.PRM_INDX_NAME, rsltIndxName);
 			try {
-				Object ret = IUtils.sendPostJsonDataReq(url, headers, lst.toString());
-				res = IUtils.getListFromJsonString(String.valueOf(ret));
-				if (!IUtils.isNull(res)) {
+				String ret = (String) IUtils.sendPostJsonDataReq(url, headers, lst.toString());
+				if (!IUtils.isNullOrEmpty(ret) && ret.startsWith("[")) {
+					res = IUtils.getListFromJsonString(ret);
 					res.add(0, rsltIndxName);
 				}
 			} catch (Exception e) {
