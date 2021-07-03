@@ -379,4 +379,10 @@ public interface IConstants {
 	String ELASTIC_INDX_DOCS = "/searchWithIndexAndType";
 	String PRM_INDEX = "index";
 	String PRM_TYPE = "type";
+
+	String GULF_HOST = "synectiks.gelf.tcp.host";
+	String GULF_PORT = "synectiks.gelf.tcp.port";
+	String GELF_USER = "synectiks.gelf.user";
+	String GELF_PASS = "synectiks.gelf.pass";
+	String GET_GELF_INDEXES = "http://%1$s:%2$s/api/system/indexer/indices";
 }

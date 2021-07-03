@@ -171,6 +171,11 @@ jhipster:
 #
 ##synectiks.search.url=http://localhost:8092
 synectiks:
+  gelf:
+    tcp.host: 100.64.108.25
+    tcp.port: 7045
+    user: admin
+    pass: admin
   search:
     url: http://localhost:8092
     savedocs: /saveDocs
