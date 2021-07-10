@@ -2,6 +2,7 @@ package com.synectiks.policy.runner.utils;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
@@ -1259,5 +1261,17 @@ public interface IUtilities {
 			return val.matches(kVal);
 		}
 		return false;
+	}
+
+	/**
+	 * Method to create a basic authentication header.
+	 * @param user
+	 * @param pass
+	 * @return
+	 */
+	static Map<String, String> getAuthHeader(String user, String pass) {
+		String encoding = Base64.getEncoder().encodeToString((user + ":" + pass).getBytes());
+		IUtils.logger.info("Auth: " + encoding);
+		return IUtils.getRestParamMap(HttpHeaders.AUTHORIZATION, "Basic " + encoding);
 	}
 }

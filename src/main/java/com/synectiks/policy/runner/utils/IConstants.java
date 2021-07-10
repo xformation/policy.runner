@@ -385,4 +385,6 @@ public interface IConstants {
 	String GELF_USER = "synectiks.gelf.user";
 	String GELF_PASS = "synectiks.gelf.pass";
 	String GET_GELF_INDEXES = "http://%1$s:%2$s/api/system/indexer/indices";
+	String POST_GELF_INPUT = "http://%1$s:%2$s/api/system/inputs";
+	String GET_GELF_INPUT_BY_ID = "http://%1$s:%2$s/api/system/inputs/%3$s";
 }

@@ -23,6 +23,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.utils.IConstants;
+import com.synectiks.policy.runner.utils.IUtilities;
 
 /**
  * @author Rajesh
@@ -61,7 +62,8 @@ public class GelfController {
 		logger.info("Url: " + url);
 		Object res = null;
 		try {
-			Map<String, String> hdrs = getAuthHeader();
+			Map<String, String> hdrs = IUtilities.getAuthHeader(env.getProperty(IConstants.GELF_USER), 
+					env.getProperty(IConstants.GELF_PASS));
 			res = IUtils.sendGetRestReq(url, hdrs, null);
 			logger.info("Res: " + res);
 		} catch (Exception e) {
