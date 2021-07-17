@@ -456,6 +456,13 @@ public class RuleEngine {
 		return res;
 	}
 
+	private List<String> saveInGrayLog(List<EvalPolicyRuleResult> lst) {
+		//Create indexSEt
+		// Create Stream
+		// Set Default rule.
+		return null;
+	}
+
 	/**
 	 * Method to save result list into elastic.
 	 * @param lst
