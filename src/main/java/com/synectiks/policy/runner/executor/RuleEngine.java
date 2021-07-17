@@ -24,6 +24,7 @@ import com.synectiks.commons.constants.IConsts;
 import com.synectiks.commons.entities.EvalPolicyRuleResult;
 import com.synectiks.commons.entities.Policy;
 import com.synectiks.commons.entities.Rule;
+import com.synectiks.commons.exceptions.SynectiksException;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.parsers.Expression;
 import com.synectiks.policy.runner.repositories.RuleRepository;
@@ -441,6 +442,29 @@ public class RuleEngine {
 		List<String> res = null;
 		if (saveRes && !IUtils.isNull(lst) && lst.size() > 0 &&
 			!IUtils.isNullOrEmpty(rsltIndxName)) {
+			// try to save into grey log first.
+			try {
+				res = saveInGrayLog(lst);
+			} catch(Exception ex) {
+				logger.error(ex.getMessage(), ex);
+				if (!IUtils.isNullOrEmpty(ex.getMessage()) &&
+						ex.getMessage().contains("Failed To Save")) {
+					res = saveInElastic(lst);
+				}
+			}
+		}
+		return res;
+	}
+
+	/**
+	 * Method to save result list into elastic.
+	 * @param lst
+	 * @return
+	 */
+	private List<String> saveInElastic(List<EvalPolicyRuleResult> lst) {
+		List<String> res = null;
+		if (saveRes && !IUtils.isNull(lst) && lst.size() > 0 &&
+				!IUtils.isNullOrEmpty(rsltIndxName)) {
 			String url = IUtilities.getSearchUrl(env,
 					env.getProperty(IConsts.KEY_SEARCH_SAVE_DOCS));
 			logger.info("Url: " + url);

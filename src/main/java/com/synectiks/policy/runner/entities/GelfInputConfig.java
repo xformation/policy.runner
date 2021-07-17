@@ -85,10 +85,11 @@ public class GelfInputConfig extends PSqlEntity {
 
 	/**
 	 * Inner class to hold Gelf Input Config Attributes.
-	 * 
 	 * @author Rajesh
 	 */
 	public static class GelfAttributes implements Serializable {
+
+		private static final long serialVersionUID = -3989900234997546592L;
 
 		private int recv_buffer_size;
 		private boolean tcp_keepalive;
