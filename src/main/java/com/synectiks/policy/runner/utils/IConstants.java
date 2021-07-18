@@ -387,4 +387,7 @@ public interface IConstants {
 	String GET_GELF_INDEXES = "http://%1$s:%2$s/api/system/indexer/indices";
 	String POST_GELF_INPUT = "http://%1$s:%2$s/api/system/inputs";
 	String GET_GELF_INPUT_BY_ID = "http://%1$s:%2$s/api/system/inputs/%3$s";
+	String POST_GELF_INDEX_SETS = "http://%1$s:%2$s/api/system/indices/index_sets";
+	String POST_GELF_STREAMS = "http://%1$s:%2$s/api/streams";
+	String POST_GELF_STREAM_RULES = "http://%1$s:%2$s/api/streams/%3$s/rules";
 }

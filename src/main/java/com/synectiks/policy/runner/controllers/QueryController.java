@@ -171,6 +171,7 @@ public class QueryController {
 	 */
 	@RequestMapping(path = IConstants.API_EXECUTE, method = RequestMethod.POST)
 	public ResponseEntity<Object> execute(long policyId,
+			@RequestParam(name = "custId", required = false) String custId,
 			@RequestParam(name = "noCache", required = false) boolean noCache) {
 		List<?> json = null;
 		logger.info("Policy to execute: " + policyId);
@@ -185,7 +186,7 @@ public class QueryController {
 					} else {
 						// Add your logic to execute non searchable query.
 						RuleEngine re = new RuleEngine(env, rest, ruleRepo, !noCache);
-						json = re.execute(policy);
+						json = re.execute(policy, custId);
 					}
 				} else {
 					throw new Exception("Policy not found for id: " + policyId);
@@ -210,7 +211,8 @@ public class QueryController {
 	public ResponseEntity<Object> executeSynQry(String qry,
 			@RequestParam(required = false) String cls,
 			@RequestParam(required = false) String index,
-			@RequestParam(required = false) String type) {
+			@RequestParam(required = false) String type,
+			@RequestParam(required = false) String custId) {
 		Object res = null;
 		try {
 			if (IUtils.isNullOrEmpty(index)) {
@@ -219,7 +221,7 @@ public class QueryController {
 				}
 			}
 			RuleEngine re = new RuleEngine(env, rest, ruleRepo, true);
-			res = re.execute(qry, cls, index, type);
+			res = re.execute(qry, cls, index, type, custId);
 		} catch (Throwable th) {
 			logger.error(th.getMessage(), th);
 			return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)

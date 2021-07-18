@@ -1274,4 +1274,30 @@ public interface IUtilities {
 		IUtils.logger.info("Auth: " + encoding);
 		return IUtils.getRestParamMap(HttpHeaders.AUTHORIZATION, "Basic " + encoding);
 	}
+
+	/**
+	 * Method to create a Gelf Entity object using post request.
+	 * @param url
+	 * @param reqObj
+	 * @param user
+	 * @param pass
+	 * @return
+	 */
+	static String createGelfEntity(
+			String url, String reqObj, String user, String pass) {
+		String id = null;
+		try {
+			Map<String, String> hdrs = getAuthHeader(user, pass);
+			hdrs.put(HttpHeaders.CONTENT_TYPE, "application/json");
+			hdrs.put("X-Requested-By", "localhost");
+			Object res = IUtils.sendPostJsonDataReq(url, hdrs, reqObj);
+			IUtils.logger.info("Res: " + res);
+			if (!IUtils.isNull(res)) {
+				id = IUtils.getJSONObject(res.toString()).optString("id");
+			}
+		} catch (Exception e) {
+			IUtils.logger.error(e.getMessage(), e);
+		}
+		return id;
+	}
 }

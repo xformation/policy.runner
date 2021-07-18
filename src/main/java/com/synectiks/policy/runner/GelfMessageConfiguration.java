@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpHeaders;
 
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.entities.GelfInputConfig;
@@ -76,7 +75,7 @@ public class GelfMessageConfiguration {
 	 * Method to get Gelf TCP Transport bean.
 	 * @return
 	 */
-	@Bean
+	//@Bean
 	public GelfTransport getGelfTransport() {
 		GelfTransport trans = null;
 		trans = getPolicyResultInputGelfTransport();
@@ -162,56 +161,23 @@ public class GelfMessageConfiguration {
 	 * @return
 	 */
 	private String createInputConfig(String host, int port) {
-		String id = null;
 		String url = String.format(IConstants.POST_GELF_INPUT, host, port);
-		try {
-			Map<String, String> hdrs = IUtilities.getAuthHeader(env.getProperty(IConstants.GELF_USER), 
-					env.getProperty(IConstants.GELF_PASS));
-			hdrs.put(HttpHeaders.CONTENT_TYPE, "application/json");
-			hdrs.put("X-Requested-By", "localhost");
-			/*{"title":"Temp_input",
-			 * "type":"com.synectiks.process.common.plugins.cef.input.CEFTCPInput",
-			 * "configuration":{
-			 * 	"bind_address":"0.0.0.0",
-			 * 	"port":12202,
-			 * 	"recv_buffer_size":1048576,
-			 * 	"number_worker_threads":8,
-			 * 	"tls_cert_file":"",
-			 * 	"tls_key_file":"",
-			 * 	"tls_enable":false,
-			 * 	"tls_key_password":"",
-			 * 	"tls_client_auth":"disabled",
-			 * 	"tls_client_auth_cert_file":"",
-			 * 	"tcp_keepalive":false,
-			 * 	"use_null_delimiter":false,
-			 * 	"max_message_size":2097152,
-			 * 	"timezone":"America/New_York",
-			 * 	"locale":"",
-			 * 	"use_full_names":false},
-			 * "global":false,
-			 * "node":"0aa99cdd-bebc-4c94-a2c4-17b14e98c53e"}*/
-			String reqObj = "{"
-					+ "\"title\": \"Sync_Dyn_Rslt_Input\","
-					+ "\"type\": \"com.synectiks.process.common.plugins.cef.input.CEFTCPInput\","
-					+ "\"configuration\": {"
-					+ "\"bind_address\": \"0.0.0.0\", \"port\": 12203, \"recv_buffer_size\": 1048576, "
-					+ "\"number_worker_threads\": 8, \"tls_cert_file\": \"\", \"tls_key_file\": \"\", "
-					+ "\"tls_enable\": false, \"tls_key_password\": \"\",\"tls_client_auth\": \"disabled\", "
-					+ "\"tls_client_auth_cert_file\": \"\", \"tcp_keepalive\": false, "
-					+ "\"use_null_delimiter\": false, \"max_message_size\": 2097152, "
-					+ "\"timezone\": \"America/New_York\", \"locale\": \"\", \"use_full_names\": false}, "
-					//+ "\"node\": \"\","
-					+ "\"global\": false"
-					+ "}";
-			Object res = IUtils.sendPostJsonDataReq(url, hdrs, reqObj);
-			logger.info("Res: " + res);
-			if (!IUtils.isNull(res)) {
-				id = IUtils.getJSONObject(res.toString()).optString("id");
-			}
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-		}
-		return id;
+		String reqObj = "{"
+				+ "\"title\": \"Sync_Dyn_Rslt_Input\","
+				+ "\"type\": \"com.synectiks.process.common.plugins.cef.input.CEFTCPInput\","
+				+ "\"configuration\": {"
+				+ "\"bind_address\": \"0.0.0.0\", \"port\": 12203, \"recv_buffer_size\": 1048576, "
+				+ "\"number_worker_threads\": 8, \"tls_cert_file\": \"\", \"tls_key_file\": \"\", "
+				+ "\"tls_enable\": false, \"tls_key_password\": \"\",\"tls_client_auth\": \"disabled\", "
+				+ "\"tls_client_auth_cert_file\": \"\", \"tcp_keepalive\": false, "
+				+ "\"use_null_delimiter\": false, \"max_message_size\": 2097152, "
+				+ "\"timezone\": \"America/New_York\", \"locale\": \"\", \"use_full_names\": false}, "
+				//+ "\"node\": \"\","
+				+ "\"global\": false"
+				+ "}";
+		return IUtilities.createGelfEntity(url, reqObj,
+				env.getProperty(IConstants.GELF_USER), 
+				env.getProperty(IConstants.GELF_PASS));
 	}
 
 }

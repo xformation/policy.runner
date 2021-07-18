@@ -11,10 +11,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.utils.DateUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.graylog2.gelfclient.GelfMessage;
+import org.graylog2.gelfclient.GelfMessageLevel;
+import org.graylog2.gelfclient.transport.GelfTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
@@ -24,8 +28,9 @@ import com.synectiks.commons.constants.IConsts;
 import com.synectiks.commons.entities.EvalPolicyRuleResult;
 import com.synectiks.commons.entities.Policy;
 import com.synectiks.commons.entities.Rule;
-import com.synectiks.commons.exceptions.SynectiksException;
 import com.synectiks.commons.utils.IUtils;
+import com.synectiks.policy.runner.GelfMessageConfiguration;
+import com.synectiks.policy.runner.PolicyApplication;
 import com.synectiks.policy.runner.parsers.Expression;
 import com.synectiks.policy.runner.repositories.RuleRepository;
 import com.synectiks.policy.runner.utils.IConstants;
@@ -313,9 +318,10 @@ public class RuleEngine {
 	/**
 	 * Method to execute a policy for an entity and reproduce the evaluation results.
 	 * @param policy
+	 * @param custId 
 	 * @return
 	 */
-	public List<?> execute(Policy policy) {
+	public List<?> execute(Policy policy, String custId) {
 		List<EvalPolicyRuleResult> lst = new ArrayList<>();
 		if (!IUtils.isNull(policy) &&
 				!IUtils.isNull(policy.getRules()) && policy.getRules().size() > 0) {
@@ -336,7 +342,7 @@ public class RuleEngine {
 					}
 					// If we are going to save result then we will get result doc ids
 					if (saveRes) {
-						return saveResult(lst);
+						return saveResult(lst, custId);
 					}
 				}
 			}
@@ -410,9 +416,10 @@ public class RuleEngine {
 	 * @param cls
 	 * @param index
 	 * @param type 
+	 * @param custId 
 	 * @return
 	 */
-	public Object execute(String qry, String cls, String index, String type) {
+	public Object execute(String qry, String cls, String index, String type, String custId) {
 		Expression exp = Expression.parse(qry, -1L, -1L);
 		if (!IUtils.isNull(exp)) {
 			List<EvalPolicyRuleResult> lst = new ArrayList<>();
@@ -426,7 +433,7 @@ public class RuleEngine {
 			}
 			// If we are going to save result then we will get result doc ids
 			if (saveRes) {
-				return saveResult(lst);
+				return saveResult(lst, custId);
 			}
 			return lst;
 		}
@@ -436,15 +443,16 @@ public class RuleEngine {
 	/**
 	 * Method to save evaluation result.
 	 * @param lst
+	 * @param custId 
 	 * @return 
 	 */
-	private List<String> saveResult(List<EvalPolicyRuleResult> lst) {
+	private List<String> saveResult(List<EvalPolicyRuleResult> lst, String custId) {
 		List<String> res = null;
 		if (saveRes && !IUtils.isNull(lst) && lst.size() > 0 &&
 			!IUtils.isNullOrEmpty(rsltIndxName)) {
 			// try to save into grey log first.
 			try {
-				res = saveInGrayLog(lst);
+				res = saveInGrayLog(lst, custId);
 			} catch(Exception ex) {
 				logger.error(ex.getMessage(), ex);
 				if (!IUtils.isNullOrEmpty(ex.getMessage()) &&
@@ -456,11 +464,116 @@ public class RuleEngine {
 		return res;
 	}
 
-	private List<String> saveInGrayLog(List<EvalPolicyRuleResult> lst) {
-		//Create indexSEt
+	/**
+	 * Method to try to save records into greylog.
+	 * @param lst
+	 * @param custId
+	 * @return
+	 */
+	private List<String> saveInGrayLog(
+			List<EvalPolicyRuleResult> lst, String custId) {
+		String host = env.getProperty(IConstants.GULF_HOST);
+		String port = env.getProperty(IConstants.GULF_PORT);
+		// Create indexSet
+		String indxId = this.createIndexSet(custId, host, port);
 		// Create Stream
+		String strmId = this.createStream(custId, indxId, host, port);
 		// Set Default rule.
-		return null;
+		String ruleId = this.createStreamRule(custId, strmId, host, port);
+		// Create TCP transport and send messages
+		putGelfMessages(lst, host);
+		List<String> retLst = new ArrayList<>();
+		retLst.add("CustId: " + custId);
+		retLst.add("IndexSetId: " + indxId);
+		retLst.add("StreamId: " + strmId);
+		retLst.add("RuleId: " + ruleId);
+		return retLst;
+	}
+
+	private void putGelfMessages(List<EvalPolicyRuleResult> lst, String host) {
+		GelfMessageConfiguration gelfConfig = PolicyApplication.getBean(
+				GelfMessageConfiguration.class);
+		GelfTransport transport = null;
+		try {
+			transport = gelfConfig.getPolicyResultInputGelfTransport();
+			for (EvalPolicyRuleResult evalRes : lst) {
+				GelfMessage msg = new GelfMessage(evalRes.toString(), host);
+				msg.setLevel(GelfMessageLevel.INFO);
+				transport.send(msg);
+			}
+		} catch (Exception ex) {
+			logger.error(ex.getMessage(), ex);
+		} finally {
+			if (!IUtils.isNull(transport)) {
+				transport.flushAndStopSynchronously(1, TimeUnit.SECONDS, 1);
+			}
+		}
+	}
+
+	private String createStreamRule(String custId, String strmId, String host,
+			String port) {
+		String url = String.format(IConstants.POST_GELF_STREAM_RULES, host, port);
+		String reqObj = "{"
+				+ "\"type\": 0,"
+				+ "\"value\": \"\","
+				+ "\"field\": \"\","
+				+ "\"inverted\": false,"
+				+ "\"description\": \"\""
+				+ "}";
+
+		return IUtilities.createGelfEntity(url, reqObj,
+				env.getProperty(IConstants.GELF_USER), 
+				env.getProperty(IConstants.GELF_PASS));
+	}
+
+	private String createStream (
+			String custId, String indxId, String host, String port) {
+		String url = String.format(IConstants.POST_GELF_STREAMS, host, port);
+		String reqObj = "{"
+				+ "\"title\": \"\","
+				+ "\"description\": \"\","
+				+ "\"rules\": [ {} ],"
+				+ "\"content_pack\": \"\","
+				+ "\"matching_type\": \"\","
+				+ "\"remove_matches_from_default_stream\": false,"
+				+ "\"index_set_id\": \"" + indxId + "\""
+				+ "}";
+
+		return IUtilities.createGelfEntity(url, reqObj,
+				env.getProperty(IConstants.GELF_USER), 
+				env.getProperty(IConstants.GELF_PASS));
+	}
+
+	/**
+	 * Method to create an IndexSets into Gelf
+	 * @param custId
+	 * @param host
+	 * @param port
+	 * @return
+	 */
+	private String createIndexSet(String custId, String host, String port) {
+		String url = String.format(IConstants.POST_GELF_INDEX_SETS, host, port);
+		String reqObj = "{"
+				+ "\"title\": \"\","
+				+ "\"description\": \"\","
+				+ "\"default\": false,"
+				+ "\"writable\": true,"
+				+ "\"index_prefix\": \"\","
+				+ "\"shrards\": 0,"
+				+ "\"replicas\": 0,"
+				+ "\"rotation_stretegy\": {},"
+				+ "\"rotation_stretegy_class\": \"\","
+				+ "\"retention_stretegy\": {},"
+				+ "\"retention_stretegy_class\": \"\","
+				+ "\"index_analyzer\": \"\","
+				+ "\"index_optimization_max_num_segments\": 0,"
+				+ "\"index_optimization_disabled\": false,"
+				+ "\"field_type_refresh_interval\": 0,"
+				+ "\"index_template_type\": \"\""
+				+ "}";
+		return IUtilities.createGelfEntity(url, reqObj,
+				env.getProperty(IConstants.GELF_USER), 
+				env.getProperty(IConstants.GELF_PASS));
 	}
 
 	/**
