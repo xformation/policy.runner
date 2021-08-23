@@ -38,6 +38,7 @@ public class GelfIndexSet extends PSqlEntity {
 	private boolean index_optimization_disabled;
 	private int field_type_refresh_interval;
 	private String index_template_type;
+	private String creationDate;
 
 	public String getGelfId() {
 		return gelfId;
@@ -173,6 +174,14 @@ public class GelfIndexSet extends PSqlEntity {
 
 	public void setIndex_template_type(String index_template_type) {
 		this.index_template_type = index_template_type;
+	}
+
+	public String getCreationDate() {
+		return this.creationDate;
+	}
+
+	public void setCreationDate(String creationDate) {
+		this.creationDate = creationDate;
 	}
 
 	/**

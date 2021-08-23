@@ -31,7 +31,13 @@ import com.synectiks.commons.entities.Rule;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.GelfMessageConfiguration;
 import com.synectiks.policy.runner.PolicyApplication;
+import com.synectiks.policy.runner.entities.GelfIndexSet;
+import com.synectiks.policy.runner.entities.GelfRules;
+import com.synectiks.policy.runner.entities.GelfStreams;
 import com.synectiks.policy.runner.parsers.Expression;
+import com.synectiks.policy.runner.repositories.GelfIndexSetRepository;
+import com.synectiks.policy.runner.repositories.GelfRulesRepository;
+import com.synectiks.policy.runner.repositories.GelfStreamsRepository;
 import com.synectiks.policy.runner.repositories.RuleRepository;
 import com.synectiks.policy.runner.utils.IConstants;
 import com.synectiks.policy.runner.utils.IUtilities;
@@ -67,10 +73,13 @@ public class RuleEngine {
 	 * Method to return result index name with execution time.
 	 * @return
 	 */
-	private void setRsltIndxName(String index) {
+	private void setRsltIndxName(String index, String scanId) {
 		if (!IUtils.isNullOrEmpty(index)) {
-			this.rsltIndxName = index + "_" + DateUtils.formatDate(
-					new Date(), IConsts.PLAIN_DATE_FORMAT);
+			if (IUtils.isNullOrEmpty(scanId)) {
+				scanId = DateUtils.formatDate(
+						new Date(), IConsts.PLAIN_DATE_FORMAT);
+			}
+			this.rsltIndxName = index + "_" + scanId;
 		}
 	}
 
@@ -319,9 +328,10 @@ public class RuleEngine {
 	 * Method to execute a policy for an entity and reproduce the evaluation results.
 	 * @param policy
 	 * @param custId 
+	 * @param scanId 
 	 * @return
 	 */
-	public List<?> execute(Policy policy, String custId) {
+	public List<?> execute(Policy policy, String custId, String scanId) {
 		List<EvalPolicyRuleResult> lst = new ArrayList<>();
 		if (!IUtils.isNull(policy) &&
 				!IUtils.isNull(policy.getRules()) && policy.getRules().size() > 0) {
@@ -333,11 +343,11 @@ public class RuleEngine {
 			List<Expression> exprs = getExpressions(policy);
 			if (!IUtils.isNull(exprs) && exprs.size() > 0) {
 				List<String> lstEntities = getIndexDocs(
-						IConstants.ELASTIC_INDX_DOCS, cls, null, null);
+						IConstants.ELASTIC_INDX_DOCS, cls, null, null, scanId);
 				if (!IUtils.isNull(lstEntities)) {
 					for (String entity : lstEntities) {
 						for (Expression exp : exprs) {
-							lst.add(exp.evaluate(IUtils.getJSONObject(entity), null, cls));
+							lst.add(exp.evaluate(IUtils.getJSONObject(entity), null, cls, custId, scanId));
 						}
 					}
 					// If we are going to save result then we will get result doc ids
@@ -377,9 +387,10 @@ public class RuleEngine {
 	 * @param cls
 	 * @param index
 	 * @param type
+	 * @param scanId 
 	 * @return
 	 */
-	private List<String> getIndexDocs(String url, String cls, String index, String type) {
+	private List<String> getIndexDocs(String url, String cls, String index, String type, String scanId) {
 		List<String> lst = null;
 		String srchUlr = IUtilities.getSearchUrl(env, url);
 		logger.info("searchUrl: " + srchUlr);
@@ -387,12 +398,12 @@ public class RuleEngine {
 		if (!IUtils.isNull(cls)) {
 			prms.add(IConsts.PRM_CLASS);
 			prms.add(cls);
-			this.setRsltIndxName(cls.substring(cls.lastIndexOf(".") + 1));
+			this.setRsltIndxName(cls.substring(cls.lastIndexOf(".") + 1), scanId);
 		}
 		if (!IUtils.isNull(index)) {
 			prms.add(IConstants.PRM_INDEX);
 			prms.add(index);
-			this.setRsltIndxName(index);
+			this.setRsltIndxName(index, scanId);
 		}
 		if (!IUtils.isNull(type)) {
 			prms.add(IConstants.PRM_TYPE);
@@ -417,18 +428,19 @@ public class RuleEngine {
 	 * @param index
 	 * @param type 
 	 * @param custId 
+	 * @param scanId 
 	 * @return
 	 */
-	public Object execute(String qry, String cls, String index, String type, String custId) {
+	public Object execute(String qry, String cls, String index, String type, String custId, String scanId) {
 		Expression exp = Expression.parse(qry, -1L, -1L);
 		if (!IUtils.isNull(exp)) {
 			List<EvalPolicyRuleResult> lst = new ArrayList<>();
 			List<String> lstEntts = getIndexDocs(
-					IConstants.ELASTIC_INDX_DOCS, cls, index, type);
+					IConstants.ELASTIC_INDX_DOCS, cls, index, type, scanId);
 			if (!IUtils.isNull(lstEntts)) {
 				for (String ent : lstEntts) {
 					lst.add(exp.evaluate(IUtils.getJSONObject(ent),
-							index, cls));
+							index, cls, custId, scanId));
 				}
 			}
 			// If we are going to save result then we will get result doc ids
@@ -452,7 +464,8 @@ public class RuleEngine {
 			!IUtils.isNullOrEmpty(rsltIndxName)) {
 			// try to save into grey log first.
 			try {
-				res = saveInGrayLog(lst, custId);
+				throw new Exception("Failed To Save");
+				//res = saveInGrayLog(lst, custId);
 			} catch(Exception ex) {
 				logger.error(ex.getMessage(), ex);
 				if (!IUtils.isNullOrEmpty(ex.getMessage()) &&
@@ -474,19 +487,24 @@ public class RuleEngine {
 			List<EvalPolicyRuleResult> lst, String custId) {
 		String host = env.getProperty(IConstants.GULF_HOST);
 		String port = env.getProperty(IConstants.GULF_PORT);
+		List<String> retLst = null;
 		// Create indexSet
 		String indxId = this.createIndexSet(custId, host, port);
-		// Create Stream
-		String strmId = this.createStream(custId, indxId, host, port);
-		// Set Default rule.
-		String ruleId = this.createStreamRule(custId, strmId, host, port);
-		// Create TCP transport and send messages
-		putGelfMessages(lst, host);
-		List<String> retLst = new ArrayList<>();
-		retLst.add("CustId: " + custId);
-		retLst.add("IndexSetId: " + indxId);
-		retLst.add("StreamId: " + strmId);
-		retLst.add("RuleId: " + ruleId);
+		if (!IUtils.isNullOrEmpty(indxId)) {
+			retLst = new ArrayList<>();
+			// Create Stream
+			String strmId = this.createStream(custId, indxId, host, port);
+			retLst.add("CustId: " + custId);
+			retLst.add("IndexSetId: " + indxId);
+			retLst.add("StreamId: " + strmId);
+			if (!IUtils.isNullOrEmpty(strmId)) {
+				// Set Default rule to match custid
+				String ruleId = this.createStreamRule(custId, strmId, host, port);
+				retLst.add("RuleId: " + ruleId);
+			}
+			// Create TCP transport and send messages
+			putGelfMessages(lst, host);
+		}
 		return retLst;
 	}
 
@@ -510,38 +528,66 @@ public class RuleEngine {
 		}
 	}
 
+	/**
+	 * Method to get or create rule in gelf streams.
+	 * @param custId
+	 * @param strmId
+	 * @param host
+	 * @param port
+	 * @return
+	 */
 	private String createStreamRule(String custId, String strmId, String host,
 			String port) {
-		String url = String.format(IConstants.POST_GELF_STREAM_RULES, host, port);
-		String reqObj = "{"
-				+ "\"type\": 0,"
-				+ "\"value\": \"\","
-				+ "\"field\": \"\","
-				+ "\"inverted\": false,"
-				+ "\"description\": \"\""
-				+ "}";
-
-		return IUtilities.createGelfEntity(url, reqObj,
-				env.getProperty(IConstants.GELF_USER), 
-				env.getProperty(IConstants.GELF_PASS));
+		String url = String.format(IConstants.POST_GELF_STREAM_RULES, host, port, strmId);
+		// {"field":"indxNam","type":"2","value":".*_\\d+$","inverted":false,"description":"Match all index with name has _number in end"}
+		GelfRulesRepository repo = PolicyApplication.getBean(GelfRulesRepository.class);
+		GelfRules rule = repo.findByValue(custId);
+		if (IUtils.isNull(rule)) {
+			String reqObj = "{"
+					+ "\"type\": 1,"
+					+ "\"value\": \"" + custId + "\","
+					+ "\"field\": \"custId\","
+					+ "\"inverted\": false,"
+					+ "\"description\": \"Accept messages of specified customer id\""
+					+ "}";
+			return IUtilities.createGelfEntity(url, reqObj,
+					env.getProperty(IConstants.GELF_USER), 
+					env.getProperty(IConstants.GELF_PASS), repo, GelfRules.class);
+		} else {
+			return rule.getGelfId();
+		}
 	}
 
+	/**
+	 * Method to get or create a streams object.
+	 * @param custId
+	 * @param indxId
+	 * @param host
+	 * @param port
+	 * @return
+	 */
 	private String createStream (
 			String custId, String indxId, String host, String port) {
 		String url = String.format(IConstants.POST_GELF_STREAMS, host, port);
-		String reqObj = "{"
-				+ "\"title\": \"\","
-				+ "\"description\": \"\","
-				+ "\"rules\": [ {} ],"
-				+ "\"content_pack\": \"\","
-				+ "\"matching_type\": \"\","
-				+ "\"remove_matches_from_default_stream\": false,"
-				+ "\"index_set_id\": \"" + indxId + "\""
-				+ "}";
-
-		return IUtilities.createGelfEntity(url, reqObj,
-				env.getProperty(IConstants.GELF_USER), 
-				env.getProperty(IConstants.GELF_PASS));
+		// {"title":"All events","description":"Stream containing all events created by compliancemanager","remove_matches_from_default_stream":true,"index_set_id":"60d36ecbf7913a6e63d33a05"}
+		GelfStreamsRepository repo = PolicyApplication.getBean(GelfStreamsRepository.class);
+		GelfStreams strms = repo.findByTitle(custId);
+		if (IUtils.isNull(strms)) {
+			String reqObj = "{"
+					+ "\"title\": \"" + custId + "\","
+					+ "\"description\": \"Stream to line " + custId + " customer policy execution result.\","
+					//+ "\"rules\": [ {} ],"
+					//+ "\"content_pack\": \"\","
+					//+ "\"matching_type\": \"\","
+					+ "\"remove_matches_from_default_stream\": false,"
+					+ "\"index_set_id\": \"" + indxId + "\""
+					+ "}";
+			return IUtilities.createGelfEntity(url, reqObj,
+					env.getProperty(IConstants.GELF_USER), 
+					env.getProperty(IConstants.GELF_PASS), repo, GelfStreams.class);
+		} else {
+			return strms.getGelfId();
+		}
 	}
 
 	/**
@@ -553,27 +599,35 @@ public class RuleEngine {
 	 */
 	private String createIndexSet(String custId, String host, String port) {
 		String url = String.format(IConstants.POST_GELF_INDEX_SETS, host, port);
-		String reqObj = "{"
-				+ "\"title\": \"\","
-				+ "\"description\": \"\","
-				+ "\"default\": false,"
-				+ "\"writable\": true,"
-				+ "\"index_prefix\": \"\","
-				+ "\"shrards\": 0,"
-				+ "\"replicas\": 0,"
-				+ "\"rotation_stretegy\": {},"
-				+ "\"rotation_stretegy_class\": \"\","
-				+ "\"retention_stretegy\": {},"
-				+ "\"retention_stretegy_class\": \"\","
-				+ "\"index_analyzer\": \"\","
-				+ "\"index_optimization_max_num_segments\": 0,"
-				+ "\"index_optimization_disabled\": false,"
-				+ "\"field_type_refresh_interval\": 0,"
-				+ "\"index_template_type\": \"\""
-				+ "}";
-		return IUtilities.createGelfEntity(url, reqObj,
-				env.getProperty(IConstants.GELF_USER), 
-				env.getProperty(IConstants.GELF_PASS));
+		GelfIndexSetRepository repo = PolicyApplication.getBean(GelfIndexSetRepository.class);
+		GelfIndexSet indxSet = repo.findByTitle(custId);
+		if (IUtils.isNull(indxSet) ) {
+			String reqObj = "{"
+					+ "\"title\": \"" + custId + "\","
+					+ "\"description\": \"Index to store policy execution result for customer: " + custId + "\","
+					+ "\"default\": false,"
+					+ "\"writable\": true,"
+					+ "\"index_prefix\": \"polcyRuleResult\","
+					+ "\"shrards\": 5,"
+					+ "\"replicas\": 0,"
+					+ "\"rotation_strategy\": {\"type\": \"com.synectiks.process.server.indexer.rotation.strategies.MessageCountRotationStrategyConfig\", \"max_docs_per_index\": 20000000},"
+					+ "\"rotation_strategy_class\": \"com.synectiks.process.server.indexer.rotation.strategies.MessageCountRotationStrategy\","
+					+ "\"retention_strategy\": {\"type\": \"com.synectiks.process.server.indexer.retention.strategies.NoopRetentionStrategyConfig\", \"max_number_of_indices\": 2147483647},"
+					+ "\"retention_strategy_class\": \"com.synectiks.process.server.indexer.retention.strategies.NoopRetentionStrategy\","
+					+ "\"index_analyzer\": \"standard\","
+					+ "\"index_optimization_max_num_segments\": 1,"
+					+ "\"index_optimization_disabled\": false,"
+					+ "\"field_type_refresh_interval\": 5000,"
+					+ "\"creationDate\": \"" + IUtils.getFormattedDate(new Date(), "yyyy-MM-dd HH:mm:ss.SSS"/*IConsts.FULL_DATE_FORMAT*/) + "\""
+					//+ "\"index_template_type\": \"\""
+					+ "}";
+			return IUtilities.createGelfEntity(url, reqObj,
+					env.getProperty(IConstants.GELF_USER), 
+					env.getProperty(IConstants.GELF_PASS),
+					repo, GelfIndexSet.class);
+		} else {
+			return indxSet.getGelfId();
+		}
 	}
 
 	/**

@@ -12,11 +12,13 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.core.env.Environment;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 import com.synectiks.commons.constants.IConsts;
+import com.synectiks.commons.entities.PSqlEntity;
 import com.synectiks.commons.entities.SourceEntity;
 import com.synectiks.commons.exceptions.SynectiksException;
 import com.synectiks.commons.interfaces.IApiController;
@@ -1277,14 +1279,17 @@ public interface IUtilities {
 
 	/**
 	 * Method to create a Gelf Entity object using post request.
+	 * @param <T>
 	 * @param url
 	 * @param reqObj
 	 * @param user
 	 * @param pass
+	 * @param repo
+	 * @param cls
 	 * @return
 	 */
-	static String createGelfEntity(
-			String url, String reqObj, String user, String pass) {
+	static <T extends PSqlEntity> String createGelfEntity(
+			String url, String reqObj, String user, String pass, CrudRepository<T, Long> repo, Class<T> cls) {
 		String id = null;
 		try {
 			Map<String, String> hdrs = getAuthHeader(user, pass);
@@ -1293,7 +1298,12 @@ public interface IUtilities {
 			Object res = IUtils.sendPostJsonDataReq(url, hdrs, reqObj);
 			IUtils.logger.info("Res: " + res);
 			if (!IUtils.isNull(res)) {
-				id = IUtils.getJSONObject(res.toString()).optString("id");
+				JSONObject json = IUtils.getJSONObject(res.toString());
+				id = json.optString("id");
+				json.remove("id");
+				json.put("gelfId", id);
+				T obj = IUtils.OBJECT_MAPPER.readValue(json.toString(), cls);
+				repo.save(obj);
 			}
 		} catch (Exception e) {
 			IUtils.logger.error(e.getMessage(), e);

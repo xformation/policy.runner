@@ -12,4 +12,6 @@ import com.synectiks.policy.runner.entities.GelfStreams;
  */
 public interface GelfStreamsRepository extends CrudRepository<GelfStreams, Long> {
 
+	public GelfStreams findByTitle(String title);
+
 }

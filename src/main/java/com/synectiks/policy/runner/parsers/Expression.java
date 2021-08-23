@@ -284,20 +284,26 @@ public class Expression implements Serializable {
 	 * @return
 	 */
 	public EvalPolicyRuleResult evaluate(JSONObject entity) {
-		return evaluate(entity, null, null);
+		return evaluate(entity, null, null, "Cust", "1");
 	}
 
 	/**
 	 * Method to evaluate expression for provided json entity.
 	 * @param entity
+	 * @param indx
+	 * @param clz
+	 * @param custId
+	 * @param scanId
 	 * @return
 	 */
-	public EvalPolicyRuleResult evaluate(JSONObject entity, String indx, String clz) {
+	public EvalPolicyRuleResult evaluate(JSONObject entity, String indx, String clz, String custId, String scanId) {
 		EvalPolicyRuleResult res = new EvalPolicyRuleResult();
 		res.setPolicyId(String.valueOf(this.policyId));
 		res.setRuleId(String.valueOf(this.ruleId));
 		res.setIndex(indx);
 		res.setClz(clz);
+		res.setCustId(custId);
+		res.setScanId(scanId);
 		StringBuilder msgs = new StringBuilder();
 		boolean suc = this.evaluate(entity, msgs);
 		if (entity.has("id")) {

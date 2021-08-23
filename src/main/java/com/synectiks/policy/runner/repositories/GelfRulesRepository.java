@@ -12,4 +12,6 @@ import com.synectiks.policy.runner.entities.GelfRules;
  */
 public interface GelfRulesRepository extends CrudRepository<GelfRules, Long> {
 
+	public GelfRules findByValue(String value);
+
 }

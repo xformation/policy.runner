@@ -177,7 +177,7 @@ public class GelfMessageConfiguration {
 				+ "}";
 		return IUtilities.createGelfEntity(url, reqObj,
 				env.getProperty(IConstants.GELF_USER), 
-				env.getProperty(IConstants.GELF_PASS));
+				env.getProperty(IConstants.GELF_PASS), inputRepo, GelfInputConfig.class);
 	}
 
 }

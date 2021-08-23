@@ -75,6 +75,29 @@ public class RuleController {
 				.body("Rule removed Successfully");
 	}
 
+	//com.synectiks.dynModel.aws.models
+	@RequestMapping(path = "createByList")
+	public ResponseEntity<Object> createMultiples(@RequestBody String entities,
+			HttpServletRequest request) {
+		List<Rule> rules = null;
+		try {
+			String user = IUtils.getUserFromRequest(request);
+			if (!IUtils.isNullOrEmpty(entities) && entities.startsWith("[")) {
+				List<String> lst = IUtils.getListFromJsonString(entities);
+				for (String ent : lst) {
+					Rule rule = IUtils.createEntity(ent, user, Rule.class);
+					rule = repository.save(rule);
+					rules.add(rule);
+				}
+			}
+		} catch (Throwable th) {
+			logger.error(th.getMessage(), th);
+			return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
+					.body(IUtils.getFailedResponse(th.getMessage()));
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(rules);
+	}
+
 	@RequestMapping(path = IConsts.API_CREATE)
 	public ResponseEntity<Object> create(@RequestBody ObjectNode entity,
 			HttpServletRequest request) {
