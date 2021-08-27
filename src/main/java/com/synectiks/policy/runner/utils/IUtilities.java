@@ -671,6 +671,22 @@ public interface IUtilities {
 	}
 
 	/**
+	 * Method to extract a string value
+	 * after removing group operator if exists or not.
+	 * @param in
+	 * @return
+	 */
+	static String getParsedValue(String in) {
+		String res = null;
+		if (IUtilities.isStartWithGroup(in)) {
+			res = getGroupValue(in, getStartWithGroup(in), false);
+		} else {
+			res = in;
+		}
+		return res;
+	}
+
+	/**
 	 * Method to check if value ends with AND or OR
 	 * @param val
 	 * @return

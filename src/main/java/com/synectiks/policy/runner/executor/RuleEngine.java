@@ -84,7 +84,7 @@ public class RuleEngine {
 	}
 
 	private static String[] QUERIES = {
-			"Rajesh", // Full text search in all fields- { "query_string": { "query": "abc" } } or { "match": { "_all": "abc" } }
+			/*"Rajesh", // Full text search in all fields- { "query_string": { "query": "abc" } } or { "match": { "_all": "abc" } }
 			"has onRoll", // Check if field exists
 			"gender = 'F'",
 			"age > 10",
@@ -101,7 +101,7 @@ public class RuleEngine {
 			"[name, fatherName] +\"Rajesh\"", // Search Rajesh AND Kumar  in key fields multi_match
 			"name = 'R.j.*'", // Like
 			"address.city != 'J..p.*r'", // NOT Like
-			"name = (Rajesh, Rajani, Ram)", // IN
+			"name = [Rajesh, Rajani, Ram]", // IN
 			"name != (Rajesh, Rajani, Ram)", // NOT IN
 			"doj <= toDate('2018-08-15 13:20:30')", // Default format: yyyy-MM-dd HH:mm:ss
 			"dob >= toDate('1999-01-01 00:00:00', 'yyyy-MM-dd HH:mm:ss')",
@@ -110,7 +110,11 @@ public class RuleEngine {
 			"name = 'Rajesh Upadhyay' AND fatherName = 'Ramesh Chand Sharma'",
 			"name = Raj AND (gender = M OR gender = F)",
 			"(name = Rajesh OR name = Rajani) AND (gender = M OR onRoll = true)",
-			"onRoll = true",
+			"onRoll = true",*/
+			"name regex('^R.*sh.*')",
+			"name != regex('^R.*sh.*')",
+			"dob before(40, 'Years')",
+			"doj after(10, 'Days')",
 			"gender.length = 1"
 	};
 	public static String[] VALS = {

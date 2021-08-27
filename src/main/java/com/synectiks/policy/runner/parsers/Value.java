@@ -4,7 +4,10 @@
 package com.synectiks.policy.runner.parsers;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -13,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.synectiks.commons.utils.IUtils;
 import com.synectiks.policy.runner.utils.IConstants.DataTypes;
 import com.synectiks.policy.runner.utils.IConstants.Keywords;
+import com.synectiks.policy.runner.utils.IConstants.TimeUnits;
 import com.synectiks.policy.runner.utils.IUtilities;
 
 /**
@@ -28,6 +32,7 @@ public class Value implements Serializable {
 	private String val;
 	private String format;
 	private DataTypes type;
+	private TimeUnits unit;
 	private Keywords function;
 	private String processedStr;
 
@@ -49,7 +54,7 @@ public class Value implements Serializable {
 	private boolean isWildcard;
 
 	private Value(String val, String processed, DataTypes type, String format,
-			Keywords func, boolean multi, boolean must, boolean wildcard) {
+			TimeUnits unit, Keywords func, boolean multi, boolean must, boolean wildcard) {
 		this.isMulti = multi;
 		if (this.isMulti) {
 			List<String> strs = IUtils.getListFromString(val, null);
@@ -61,6 +66,7 @@ public class Value implements Serializable {
 			this.val = val;
 		}
 		this.type = type;
+		this.unit = unit;
 		this.isMust = must;
 		this.format = format;
 		this.function = func;
@@ -74,6 +80,10 @@ public class Value implements Serializable {
 
 	public DataTypes getType() {
 		return type;
+	}
+
+	public TimeUnits getUnit() {
+		return unit;
 	}
 
 	public Keywords getFunction() {
@@ -131,6 +141,7 @@ public class Value implements Serializable {
 		StringBuilder prcd = new StringBuilder();
 		if (!IUtils.isNullOrEmpty(in)) {
 			String value = null, format = null;
+			TimeUnits unit = null;
 			DataTypes type = null;
 			boolean multi = false, must = false, wildcard = false;
 			// Check if value has any function
@@ -153,32 +164,30 @@ public class Value implements Serializable {
 				in = IUtilities.removeProcessedString(in, grp.getKey());
 				// Refine value if its function todate then extract format form it.
 				if (!IUtils.isNull(func)) {
-					if (Keywords.TODATE == func && value.contains(",")) {
+					if (Keywords.AFTER == func || Keywords.BEFORE == func) {
 						List<String> lst = IUtils.getListFromString(value, null);
 						if (!IUtils.isNull(lst) && lst.size() == 2) {
-							if (IUtilities.isStartWithGroup(lst.get(0))) {
-								value = IUtilities.getGroupValue(lst.get(0),
-										IUtilities.getStartWithGroup(lst.get(0)), false);
-							} else {
-								value = lst.get(0);
-							}
-							if (IUtilities.isStartWithGroup(lst.get(1))) {
-								format = IUtilities.getGroupValue(lst.get(1),
-										IUtilities.getStartWithGroup(lst.get(1)), false);
-							} else {
-								value = lst.get(1);
-							}
+							value = IUtilities.getParsedValue(lst.get(0));
+							String tunit = IUtilities.getParsedValue(lst.get(1));
+							unit = TimeUnits.fromString(tunit);
+						} else {
+							logger.info("Invalid use of function should have 2 params");
+						}
+					} else if (Keywords.TODATE == func && value.contains(",")) {
+						List<String> lst = IUtils.getListFromString(value, null);
+						if (!IUtils.isNull(lst) && lst.size() == 2) {
+							value = IUtilities.getParsedValue(lst.get(0));
+							format = IUtilities.getParsedValue(lst.get(1));
 						}
 					} else if (Keywords.SmlBrkt == grp) {// date or regex function
 						if (IUtilities.isStartWithGroup(value)) {
-							value = IUtilities.getGroupValue(value,
-									IUtilities.getStartWithGroup(value), false);
+							value = IUtilities.getParsedValue(value);
 						}
 					}
 					if (Keywords.TODATE == func) {
 						type = DataTypes.DATE;
 					}
-				} else if (Keywords.SmlBrkt == grp) {// multi value case
+				} else /*if (Keywords.SmlBrkt == grp)*/ {// multi value case
 					multi = true;
 				}
 			} else {// Get the first string as value
@@ -194,10 +203,48 @@ public class Value implements Serializable {
 				type = DataTypes.findType(value);
 			}
 			val = new Value(value, prcd.toString(), type, format,
-					func, multi, must, wildcard);
+					unit, func, multi, must, wildcard);
 		}
 		logger.debug("Parsed Value: " + val);
 		return val;
+	}
+
+	/**
+	 * Method to return before date
+	 * @return
+	 */
+	public Date getDateBefore() {
+		if (!IUtils.isNull(unit) && !IUtils.isNullOrEmpty(val) &&
+				val.matches("[+|-]?\\d+")) {
+			try {
+				return Date.from(LocalDateTime.now().minus(
+						Long.parseLong(val), unit.getChronoUnit())
+						.toInstant(ZoneOffset.UTC)
+						);
+			} catch (Exception ex) {
+				logger.error(ex.getMessage());
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Method to return after date
+	 * @return
+	 */
+	public Date getDateAfter() {
+		if (!IUtils.isNull(unit) && !IUtils.isNullOrEmpty(val) &&
+				val.matches("[+|-]?\\d+")) {
+			try {
+				return Date.from(LocalDateTime.now().plus(
+						Long.parseLong(val), unit.getChronoUnit())
+						.toInstant(ZoneOffset.UTC)
+						);
+			} catch (Exception ex) {
+				logger.error(ex.getMessage());
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -210,6 +257,8 @@ public class Value implements Serializable {
 			builder.append("\"format\": \"").append(format).append("\", ");
 		if (type != null)
 			builder.append("\"type\": \"").append(type).append("\", ");
+		if (unit != null)
+			builder.append("\"timeUnit\": \"").append(unit.getUnit()).append("\", ");
 		if (function != null)
 			builder.append("\"function\": \"").append(function).append("\", ");
 		if (processedStr != null)

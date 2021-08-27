@@ -5,6 +5,7 @@ package com.synectiks.policy.runner.parsers;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.codehaus.jettison.json.JSONObject;
@@ -531,7 +532,8 @@ public class Expression implements Serializable {
 			if (Keywords.Equals.getKey() != op) {// Its a not like query
 				res = !res;
 			}
-		} else if (!IUtils.isNull(this.value.getFunction())) {
+		} else if (!IUtils.isNull(this.value.getFunction()) &&
+				Keywords.TODATE == this.value.getFunction()) {
 			long dtTime = IUtilities.getLongTime((String) val, null);
 			res = IUtilities.evalOperator(this.value.getDateValue(), op, dtTime);
 		} else {
@@ -568,6 +570,19 @@ public class Expression implements Serializable {
 			msgs.append(msgs.length() > 0 ? " \n" :
 				"'" + key.getKey() + "' " + (isPass ? "" : "NOT") +
 				" match for regex '" + this.value.getVal() + "'.");
+			// Handle != regex('x') expression
+			if (!IUtils.isNull(this.operator) &&
+					Keywords.NotEquals == this.operator) {
+				isPass = !isPass;
+			}
+			break;
+		case BEFORE:
+		case AFTER:
+			isPass = evalDateBeforeAfter(entity);
+			msgs.append(msgs.length() > 0 ? " \n" :
+				"'" + key.getKey() + "' is " + (isPass ? "" : "NOT ") +
+				this.function.getKey() + " the '" + this.value.getVal() + "' "
+						+ this.value.getUnit().name() + ".");
 			break;
 		case TODATE:
 			// Ignore it, we will take care of it in operators
@@ -581,13 +596,39 @@ public class Expression implements Serializable {
 	}
 
 	/**
+	 * Method to compare date is before or after the value date.
+	 * @param entity
+	 * @return
+	 */
+	private boolean evalDateBeforeAfter(JSONObject entity) {
+		boolean res = false;
+		if (!IUtils.isNull(entity) && !IUtils.isNullOrEmpty(key.getKey())) {
+			String val = (String) IUtilities.getValueOfKey(
+					entity, key.getKey(), key.isNested());
+
+			Date entDate = IUtils.parseDate(val, null, null);
+			if (Keywords.AFTER == this.function &&
+					!IUtils.isNull(this.value.getDateAfter())) {
+				Date afDate = this.value.getDateAfter();
+				res = entDate.after(afDate);
+			} else if (!IUtils.isNull(this.value.getDateBefore())) {
+				Date brDate = this.value.getDateBefore();
+				res = entDate.before(brDate);
+			} else {
+				logger.error("Unknown function or invalid input.");
+			}
+		}
+		return res;
+	}
+
+	/**
 	 * Method to check if key's value match with given reges.
 	 * @param entity
 	 * @return
 	 */
 	private boolean evalRegex(JSONObject entity) {
 		boolean res = false;
-		if (!IUtils.isNull(entity) && entity.has(key.getKey())) {
+		if (!IUtils.isNull(entity) && !IUtils.isNullOrEmpty(key.getKey())) {
 			String val = (String) IUtilities.getValueOfKey(
 					entity, key.getKey(), key.isNested());
 			res = IUtilities.evalRegex(value.getVal(), val);

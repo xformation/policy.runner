@@ -3,6 +3,7 @@
  */
 package com.synectiks.policy.runner.utils;
 
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,49 @@ public interface IConstants {
 	 * 2003-03-05, 2003.03.05
 	 */
 	String REGEX_TO_MATCH_DATE = "^(\\w{3}|\\d{1,4})[\\.\\-/\\s]\\d{1,2}[,\\-/\\.]\\s?\\d{1,4}";
+
+	enum TimeUnits {
+		Seconds("Seconds"),
+		Minutes("Minutes"),
+		Hours("Hours"),
+		Days("Days"),
+		Weeks("Weeks"),
+		Months("Months"),
+		Years("Years");
+
+		private String unit;
+
+		TimeUnits(String unit) {
+			this.unit = unit;
+		}
+
+		public String getUnit() {
+			return unit;
+		}
+
+		/**
+		 * Method returns the LocalDate ChronoUnit value.
+		 * @return
+		 */
+		public ChronoUnit getChronoUnit() {
+			return ChronoUnit.valueOf(unit.toUpperCase());
+		}
+
+		/**
+		 * Method to find the time unit by unit string
+		 * @param in
+		 * @return
+		 */
+		public static TimeUnits fromString(String in) {
+			TimeUnits tu = null;
+			for (TimeUnits u : TimeUnits.values()) {
+				if (u.unit.equalsIgnoreCase(in)) {
+					return u;
+				}
+			}
+			return tu;
+		}
+	}
 
 	/**
 	 * Data types for elastic mapping supported.
@@ -113,6 +157,14 @@ public interface IConstants {
 				"This function help to convert string value to date for matching key&#39;s value."
 				+ " i.e. <i>key >= toDate(&#39;2018-08-15 13:20:30&#39;, &#39;yyyy-MM-dd HH:mm:ss&#39;)</i>",
 				DataTypes.DATE),
+		BEFORE("before", KWTypes.FUNCTION,
+				"This function help to get the date compared based on operator specified, "
+				+ "with date before specified number of seconds minutes hours days weeks months or years. "
+				+ "i.e. <i>key < before(90, &#39;Days|Weeks|Months|Years|Hours|Minutes|Seconds&#39;)"),
+		AFTER("after", KWTypes.FUNCTION,
+				"This function help to get the date compared based on operator specified, "
+				+ "with date after specified number of seconds minutes hours days weeks months or years. "
+				+ "i.e. <i>key < before(90, &#39;Days|Weeks|Months|Years|Hours|Minutes|Seconds&#39;)"),
 		// Group
 		CptlBrkt("[]", KWTypes.GROUP,
 				"We use capital brackets for enclosing multiple keys."
