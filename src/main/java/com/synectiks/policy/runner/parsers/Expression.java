@@ -38,6 +38,7 @@ public class Expression implements Serializable {
 
 	private List<Expression> andExpressions;
 	private List<Expression> orExpressions;
+	private List<Expression> notExpressions;
 	
 	private Key key;
 	private Keywords operator;
@@ -51,14 +52,15 @@ public class Expression implements Serializable {
 	}
 
 	private Expression(Key key, Keywords oprtr, Keywords func, Value val,
-			List<Expression> andExp, List<Expression> orExp, boolean has, boolean fts,
-			String prsds) {
+			List<Expression> andExp, List<Expression> orExp, List<Expression> notExp,
+			boolean has, boolean fts, String prsds) {
 		this.key = key;
 		this.function = func;
 		this.operator = oprtr;
 		this.value = val;
 		this.andExpressions = andExp;
 		this.orExpressions = orExp;
+		this.notExpressions = notExp;
 		this.isExists = has;
 		this.isFullText = fts;
 		this.processedStr = prsds;
@@ -94,6 +96,10 @@ public class Expression implements Serializable {
 
 	public List<Expression> getOrExpressions() {
 		return orExpressions;
+	}
+
+	public List<Expression> getNotExpressions() {
+		return notExpressions;
 	}
 
 	public Key getKey() {
@@ -152,7 +158,7 @@ public class Expression implements Serializable {
 			Keywords func = null;
 			Keywords oprtr = null;
 			boolean has = false, fts = false;
-			List<Expression> andExp = null, orExp = null;
+			List<Expression> andExp = null, orExp = null, notExp = null;
 			// Check if we have not null input expression.
 			logger.debug("Input: " + in);
 			if (IUtilities.isStartWithConjuction(in)) {
@@ -167,12 +173,18 @@ public class Expression implements Serializable {
 							andExp.add(expr);
 						}
 						andExp.add(exp);
-					} else {
+					} else if (Keywords.OR == conj){
 						orExp = new ArrayList<>();
 						if (!IUtils.isNull(expr)) {
 							orExp.add(expr);
 						}
 						orExp.add(exp);
+					} else {
+						notExp = new ArrayList<>();
+						if (!IUtils.isNull(expr)) {
+							notExp.add(expr);
+						}
+						notExp.add(exp);
 					}
 					sb.append(exp.getProcessedStr());
 					in = IUtilities.removeProcessedString(in, exp.getProcessedStr());
@@ -245,7 +257,8 @@ public class Expression implements Serializable {
 				sb.append(val.getProcessedStr());
 			}
 			// Finally create an Expression object
-			expr = new Expression(key, oprtr, func, val, andExp, orExp, has, fts, sb.toString());
+			expr = new Expression(key, oprtr, func,
+					val, andExp, orExp, notExp, has, fts, sb.toString());
 		}
 		logger.debug("Parsed Expression: " + expr);
 		return expr;
@@ -335,6 +348,10 @@ public class Expression implements Serializable {
 		if (!IUtils.isNull(this.orExpressions) && this.orExpressions.size() > 0) {
 			boolean isSuc = evalOrExpr(entity, msgs);
 			suc = suc || isSuc;
+		}
+		if (!IUtils.isNull(this.notExpressions) && this.notExpressions.size() > 0) {
+			suc = evalNotExpr(entity, msgs);
+			isAnd = true;
 		}
 		// Now evaluate this expression for function operator and other values types.
 		boolean isPass = (isAnd ? suc : false);
@@ -680,6 +697,20 @@ public class Expression implements Serializable {
 			if (!expr.evaluate(entity, msgs)) {
 				isSuc = false;
 			}
+		}
+		return isSuc;
+	}
+
+	/**
+	 * Method to evaluate NOT expressions.
+	 * @param entity
+	 * @param msgs
+	 * @return
+	 */
+	private boolean evalNotExpr(JSONObject entity, StringBuilder msgs) {
+		boolean isSuc = false;
+		for (Expression expr : this.notExpressions) {
+			isSuc = isSuc || !expr.evaluate(entity, msgs);
 		}
 		return isSuc;
 	}

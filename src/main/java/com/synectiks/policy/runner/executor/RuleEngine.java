@@ -84,7 +84,7 @@ public class RuleEngine {
 	}
 
 	private static String[] QUERIES = {
-			/*"Rajesh", // Full text search in all fields- { "query_string": { "query": "abc" } } or { "match": { "_all": "abc" } }
+			"Rajesh", // Full text search in all fields- { "query_string": { "query": "abc" } } or { "match": { "_all": "abc" } }
 			"has onRoll", // Check if field exists
 			"gender = 'F'",
 			"age > 10",
@@ -110,11 +110,12 @@ public class RuleEngine {
 			"name = 'Rajesh Upadhyay' AND fatherName = 'Ramesh Chand Sharma'",
 			"name = Raj AND (gender = M OR gender = F)",
 			"(name = Rajesh OR name = Rajani) AND (gender = M OR onRoll = true)",
-			"onRoll = true",*/
+			"onRoll = true",
 			"name regex('^R.*sh.*')",
 			"name != regex('^R.*sh.*')",
 			"dob before(40, 'Years')",
 			"doj after(10, 'Days')",
+			"name = Raj NOT gender = M",
 			"gender.length = 1"
 	};
 	public static String[] VALS = {

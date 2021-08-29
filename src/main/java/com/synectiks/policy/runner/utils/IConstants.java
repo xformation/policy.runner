@@ -136,6 +136,9 @@ public interface IConstants {
 		OR("OR", KWTypes.CONJUNCTION,
 				"A logical conjunction on two expressions, any to be matched. "
 				+ "i.e. key = value OR key = value"),
+		NOT("NOT", KWTypes.CONJUNCTION,
+				"A logical conjunction operator to negative the expression. "
+				+ "i.e. key =  vlaue NOT key = value"),
 		// Functions
 		ISEMPTY("isEmpty", KWTypes.FUNCTION,
 				"Check or select rows if the key&#39;s value is empty i.e. <i>key isEmpty</i>",
