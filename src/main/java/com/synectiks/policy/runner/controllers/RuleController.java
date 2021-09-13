@@ -1,5 +1,6 @@
 package com.synectiks.policy.runner.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -79,7 +80,7 @@ public class RuleController {
 	@RequestMapping(path = "createByList")
 	public ResponseEntity<Object> createMultiples(@RequestBody String entities,
 			HttpServletRequest request) {
-		List<Rule> rules = null;
+		List<Rule> rules = new ArrayList<>();
 		try {
 			String user = IUtils.getUserFromRequest(request);
 			if (!IUtils.isNullOrEmpty(entities) && entities.startsWith("[")) {
